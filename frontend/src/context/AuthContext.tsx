@@ -5,11 +5,19 @@ import React, {
   useEffect,
   ReactNode,
 } from "react";
-// import { authAPI } from "../services/AuthServices.tsx";
-import { getToken, setToken, removeToken } from "../services/TokenServices.tsx";
-import { login as loginWeb, register as registerWeb} from "../services/AuthServices.tsx";
+import {
+  login as loginWeb,
+  register as registerWeb,
+} from "../services/AuthServices.tsx";
+import {
+  getToken,
+  setToken,
+  removeToken,
+  getTokenUser,
+  setTokenUser,
+} from "../services/TokenServices.tsx";
 import { AuthContextType, RegisterData, User } from "../types/index.tsx";
-
+import { decrypt, encrypt } from "../utils/Crypto.tsx";
 
 // Create the context with default values
 const AuthContext = createContext<AuthContextType>({
@@ -26,7 +34,7 @@ interface AuthProviderProps {
   children: ReactNode;
 }
 
-// Storage key for user data
+// Cookie key for user data
 const USER_KEY = "user_data";
 
 export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
@@ -36,10 +44,10 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   // Check for existing token and user on mount
   useEffect(() => {
     const token = getToken();
-    const storedUser = localStorage.getItem(USER_KEY);
+    const storedUser = getTokenUser(USER_KEY);
 
     if (token && storedUser) {
-      setUser(JSON.parse(storedUser));
+      setUser(decrypt<User>(storedUser));
     }
 
     setIsLoading(false);
@@ -52,11 +60,13 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       const response = await loginWeb({ email, password });
 
       // Extract token and user from response
-      const { data:{token, user} } = response;
+      const {
+        data: { token, user },
+      } = response;
 
-      // Save token to cookies and user to local storage
+      // Save token and user to cookies (only user data is encrypted)
       setToken(token, "token");
-      localStorage.setItem(USER_KEY, JSON.stringify(user));
+      setTokenUser(encrypt(user), USER_KEY);
 
       // Update state
       setUser(user);
@@ -71,7 +81,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   // Logout function
   const logout = () => {
     removeToken("token");
-    localStorage.removeItem(USER_KEY);
+    removeToken(USER_KEY);
     setUser(null);
   };
 
@@ -80,13 +90,17 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     setIsLoading(true);
     try {
       const response = await registerWeb(data);
+      // Extract token and user from response
+      const {
+        data: { token, user },
+      } = response;
 
-      // If registration automatically logs in, handle the token and user
-      if (response.token && response.user) {
-        setToken(response.token, "token");
-        localStorage.setItem(USER_KEY, JSON.stringify(response.user));
-        setUser(response.user);
-      }
+      // Save token and user to cookies (only user data is encrypted)
+      setToken(token, "token");
+      setTokenUser(encrypt(user), USER_KEY);
+
+      // Update state
+      setUser(user);
     } catch (error) {
       console.error("Registration failed:", error);
       throw error;
@@ -95,10 +109,10 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     }
   };
 
-  // Create the context value
+  // Create the context value with decrypted token check
   const value = {
     user,
-    isAuthenticated: !!getToken(),
+    isAuthenticated: !!getToken(), // This will check if token exists
     isLoading,
     login,
     logout,

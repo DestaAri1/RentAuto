@@ -7,6 +7,7 @@ import { Home } from "./pages/Home/Home.tsx";
 import { AuthProvider } from "./context/AuthContext.tsx";
 import React from 'react'
 import { AuthRoute, ProtectedRoute } from "./utils/RouteGuard.tsx";
+import Register from "./pages/Auth/Register.tsx";
 
 
 function App() {
@@ -26,7 +27,7 @@ function App() {
             path="/register"
             element={
               <AuthRoute>
-                <Login />
+                <Register />
               </AuthRoute>
             }
           />

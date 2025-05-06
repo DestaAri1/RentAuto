@@ -26,13 +26,13 @@ const AuthTitle = () => {
 
   if (currentLocation === "/login") {
     authTitleItem = {
-      title1: "Sign in to your account",
+      title1: "Log In to your account",
       title2: "create a new account",
       link: "/register",
     };
   } else {
     authTitleItem = {
-      title1: "Log In to your account",
+      title1: "Register your account",
       title2: "you already have an account?",
       link: "/login",
     };
