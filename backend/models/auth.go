@@ -4,6 +4,7 @@ import (
 	"context"
 	"net/mail"
 
+	"github.com/google/uuid"
 	"golang.org/x/crypto/bcrypt"
 )
 
@@ -16,6 +17,7 @@ type AuthCredentials struct {
 type AuthRepository interface {
 	RegisterUser(ctx context.Context, registerData *AuthCredentials) (*User, error)
 	GetUser(ctx context.Context, query interface{}, args ...interface{}) (*User, error)
+	GetUserWithRole(ctx context.Context, userId uuid.UUID, user *User) error
 }
 
 type LoginCredentials struct {

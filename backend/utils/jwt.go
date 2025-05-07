@@ -1,7 +1,40 @@
 package utils
 
-import "github.com/golang-jwt/jwt/v5"
+import (
+	"fmt"
 
-func GenerateJWT(claims jwt.Claims, method jwt.SigningMethod, jwtSecret string) (string, error) {
-	return jwt.NewWithClaims(method, claims).SignedString([]byte(jwtSecret))
+	"github.com/golang-jwt/jwt/v5"
+)
+
+func GenerateJWT(claims jwt.MapClaims, signingMethod jwt.SigningMethod, secret string) (string, error) {
+	token := jwt.NewWithClaims(signingMethod, claims)
+
+	// Print token header for debugging
+	fmt.Printf("JWT Generation - Token header: %+v\n", token.Header)
+
+	// Sign the token
+	tokenString, err := token.SignedString([]byte(secret))
+	if err != nil {
+		return "", fmt.Errorf("failed to sign token: %v", err)
+	}
+
+	return tokenString, nil
+}
+
+func ValidateToken(tokenString string, secret string) (*jwt.Token, error) {
+	token, err := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
+		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
+		}
+		return []byte(secret), nil
+	})
+
+	if err != nil {
+		return nil, err
+	}
+
+	if !token.Valid {
+		return nil, fmt.Errorf("invalid token")
+	}
+
+	return token, nil
 } 

@@ -9,5 +9,7 @@ func DBMigrator(db *gorm.DB) error {
 	return db.AutoMigrate(
 		&models.User{},
 		&models.Role{},
+		&models.CarTypes{},
+		&models.Car{},
 	)
 }

@@ -5,6 +5,7 @@ import (
 
 	"github.com/DestaAri1/RentAuto/database"
 	"github.com/DestaAri1/RentAuto/handlers"
+	"github.com/DestaAri1/RentAuto/middlewares"
 	"github.com/DestaAri1/RentAuto/models"
 	repository "github.com/DestaAri1/RentAuto/repositories"
 	"github.com/DestaAri1/RentAuto/services"
@@ -33,11 +34,15 @@ func setupApp() *fiber.App {
 // Repository initialization
 type AppRepositories struct {
 	auth models.AuthRepository
+	cars models.CarRepository
+	roles models.RoleRepository
 }
 
 func setupRepositories(database *gorm.DB) AppRepositories {
 	return AppRepositories{
 		auth: repository.NewAuthRepository(database),
+		cars: repository.NewCarRepository(database),
+		roles: repository.NewRoleRepository(database),
 	}
 }
 
@@ -63,25 +68,16 @@ func setupRoutes(app *fiber.App, database *gorm.DB, repos AppRepositories, servi
 	// handlers.NewUserProductHandler(api.Group("/product"), repos.userProduct)
 
 	// Protected routes
-	// protected := api.Use(middlewares.AuthProtected(database))
+	protected := api.Use(middlewares.AuthProtected(database))
 
 	//Public Protected Routes
-	// handlers.NewBiodataHandler(protected.Group("/biodata"), repos.biodata)
-	// handlers.NewRegionalAddressHandler(protected.Group("/regional-address"), repos.regionalAaddress)
-	// handlers.NewAddressHandler(protected.Group("/address"), repos.address, repos.base)
-	// handlers.NewCartHandler(protected.Group("/cart"), repos.cart)
 
-	// // User routes
-	// handlers.NewGetUserHandler(protected.Group("/auth"), repos.auth)
-	// handlers.NewSellerHandler(protected.Group("/user"), repos.seller, repos.auth, database)
+	//  User routes
 
-	// // Admin routes
-	// handlers.NewAdminHandler(protected.Group("/admin/seller"), repos.admin, database)
-	// handlers.NewAdminUserHandler(protected.Group("/admin/user"), repos.adminUser, database)
+	//  Admin routes
+	handlers.NewCarHandler(protected.Group("/cars"), repos.cars, repos.roles)
 
-	// // Common routes
-	// handlers.NewCategoryHandler(protected.Group("/category"), repos.category, database)
-	// handlers.NewSellerProductHandler(protected.Group("/seller/product"), repos.sellerProduct, database)
+	//  Common routes
 }
 
 func main() {

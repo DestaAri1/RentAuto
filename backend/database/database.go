@@ -4,6 +4,7 @@ import (
 	// "github.com/DestaAri1/models"
 	"github.com/DestaAri1/RentAuto/models"
 	"github.com/gofiber/fiber/v2/log"
+	"github.com/google/uuid"
 	"golang.org/x/crypto/bcrypt"
 
 	"gorm.io/driver/mysql"
@@ -35,8 +36,14 @@ func seedData(db *gorm.DB) {
 	// 1. SEED ROLE
 	roles := []models.Role{
 		{
-			Name: "Administrator",
-			Permission: []string{"create", "read", "update", "delete"},
+			ID:         uuid.New(),
+			Name:       "Administrator",
+			Permission: []string{"all"},
+		},
+		{
+			ID:         uuid.New(),
+			Name:       "User",
+			Permission: nil,
 		},
 	}
 
@@ -61,6 +68,7 @@ func seedData(db *gorm.DB) {
 	// 3. SEED USER
 	users := []models.User{
 		{
+			ID:       uuid.New(),
 			Name:     "Admin Auto Rent",
 			Email:    "admin@gmail.com",
 			Password: hashPassword("12345678"),
