@@ -54,7 +54,7 @@ func (r *CarRepository) UpdateCar(ctx context.Context, updateData map[string]int
 
 	tx := r.db.Begin()
 
-	if res := tx.Where("id = ?", carId).Updates(updateData); res.Error != nil {
+	if res := tx.Model(&models.Car{}).Where("id = ?", carId).Updates(updateData); res.Error != nil {
 		tx.Rollback()
 		return res.Error
 	}

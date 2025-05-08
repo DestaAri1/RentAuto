@@ -36,6 +36,7 @@ type AppRepositories struct {
 	auth models.AuthRepository
 	cars models.CarRepository
 	roles models.RoleRepository
+	carTypes models.CarTypesRepository
 }
 
 func setupRepositories(database *gorm.DB) AppRepositories {
@@ -43,6 +44,7 @@ func setupRepositories(database *gorm.DB) AppRepositories {
 		auth: repository.NewAuthRepository(database),
 		cars: repository.NewCarRepository(database),
 		roles: repository.NewRoleRepository(database),
+		carTypes: repository.NewCarTypeRepositories(database),
 	}
 }
 
@@ -75,7 +77,8 @@ func setupRoutes(app *fiber.App, database *gorm.DB, repos AppRepositories, servi
 	//  User routes
 
 	//  Admin routes
-	handlers.NewCarHandler(protected.Group("/cars"), repos.cars, repos.roles)
+	handlers.NewCarHandler(protected.Group("/admin/cars"), repos.cars, repos.roles)
+	handlers.NewCarTypesHandler(protected.Group("/admin/car-types"), repos.carTypes, repos.roles)
 
 	//  Common routes
 }

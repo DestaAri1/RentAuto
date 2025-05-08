@@ -15,6 +15,8 @@ func (v *CarValidator) HandleFieldError(field string, tag string, param string) 
 	switch field {
 	case "Name":
 		return v.handleNameValidation(tag, param)
+	case "Unit":
+		return v.handleUnitValidation(tag, param)
 	case "Price":
 		return v.handlePriceValidation(tag, param)
 	case "TypeId":
@@ -34,6 +36,17 @@ func (v *CarValidator) handleNameValidation(tag string, param string) string {
 		return "Name field is required"
 	case "max":
 		return "Name cannot exceed 100 characters"
+	default:
+		return ""
+	}
+}
+
+func (v *CarValidator) handleUnitValidation(tag string, param string) string {
+	switch tag {
+	case "required":
+		return "Seats field is required"
+	case "min":
+		return "Seats must be at least 1"
 	default:
 		return ""
 	}
