@@ -46,10 +46,11 @@ export interface Cars {
   id: number;
   name: string;
   image: string;
+  amount?: number;
   price: number;
   type: string;
   seats: number;
-  rating: number;
+  rating?: number;
 }
 
 interface HIW {
@@ -66,4 +67,42 @@ interface Testimonials {
   image: string;
   text: string;
   rating: number;
+}
+
+interface NavItem {
+  title: string;
+  href: string;
+  icon: LucideIcon;
+}
+
+export interface NavItemProps {
+  navItem: NavItem[];
+}
+
+export interface SideBarProps {
+  sidebarOpen?: boolean;
+  setSidebarOpen: (value: boolean) => void;
+}
+
+interface Crumb {
+  name: string;
+  href?: string;
+  current?: boolean;
+}
+
+export interface BreadcrumbProps {
+  breadcrumb: Crumb[];
+  actionButton?: React.ReactNode;
+}
+
+interface AvailableCars {
+  id: number;
+  name: string;
+  type: string;
+  availability: string;
+  price: number;
+}
+
+export interface AvailableCarsProps {
+  availableCars: AvailableCars[]
 }

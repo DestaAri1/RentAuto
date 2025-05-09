@@ -8,6 +8,7 @@ import { AuthProvider } from "./context/AuthContext.tsx";
 import React from 'react'
 import { AuthRoute, ProtectedRoute } from "./utils/RouteGuard.tsx";
 import Register from "./pages/Auth/Register.tsx";
+import CarsIndex from "./pages/Dashboard/Cars.tsx";
 
 
 function App() {
@@ -38,6 +39,14 @@ function App() {
             element={
               <ProtectedRoute>
                 <Dashboard />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/dashboard/my-rentals"
+            element={
+              <ProtectedRoute>
+                <CarsIndex />
               </ProtectedRoute>
             }
           />
