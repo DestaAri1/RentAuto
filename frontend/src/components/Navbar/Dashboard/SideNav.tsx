@@ -19,7 +19,7 @@ export default function SideNav({ sidebarOpen, setSidebarOpen }: SideBarProps) {
   const navItem = [
     { title: "Dashboard", href: "/dashboard", icon: BarChart },
     { title: "My Rentals", href: "/dashboard/my-rentals", icon: Car },
-    { title: "Bookings", href: "/bookings", icon: Calendar },
+    { title: "Bookings", href: "/dashboard/bookings", icon: Calendar },
     { title: "Locations", href: "/locations", icon: Map },
     { title: "Invoices", href: "/invoices", icon: FileText },
     { title: "Settings", href: "/settings", icon: Settings },

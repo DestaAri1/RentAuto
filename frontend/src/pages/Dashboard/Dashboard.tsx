@@ -1,10 +1,5 @@
 import React from "react";
-import {
-  Car,
-  Users,
-  Calendar,
-  CreditCard,
-} from "lucide-react";
+import { Car, Users, Calendar, CreditCard } from "lucide-react";
 import DashboardLayout from "../../layout/DashboardLayout.tsx";
 import RentBooking from "../../components/Dashboard/Dashboard/RentBooking.tsx";
 import AvailableCars from "../../components/Dashboard/Dashboard/AvailableCars.tsx";
@@ -98,11 +93,11 @@ const Dashboard: React.FC = () => {
 
   const breadcrumbItems = [
     { name: "Dashboard", href: "/dashboard" },
-    { name: "Bookings", current: true },
   ];
 
   return (
     <DashboardLayout
+      title="Dashboard"
       breadcrumb={breadcrumbItems}
       actionButton={
         <button className="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500">
@@ -112,7 +107,7 @@ const Dashboard: React.FC = () => {
     >
       <div className="max-w-7xl mx-auto px-4 sm:px-6 md:px-8">
         {/* Stats */}
-        <Stats rentalStats={rentalStats}/>
+        <Stats rentalStats={rentalStats} />
 
         {/* Recent Bookings */}
         <RentBooking

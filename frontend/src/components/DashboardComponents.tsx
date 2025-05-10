@@ -3,7 +3,8 @@ import { Link } from "react-router-dom";
 import { BreadcrumbProps } from "../types";
 
 interface DashboardComponentsProps {
-  children: ReactNode;
+  title?: string;
+  children?: ReactNode;
 }
 
 const DashboardMain = ({ children }: DashboardComponentsProps) => {
@@ -29,6 +30,17 @@ const SideNavHeader = ({ children }: DashboardComponentsProps) => {
 const DashMainContent = ({ children }: DashboardComponentsProps) => {
   return (
     <div className="flex flex-col w-0 flex-1 overflow-hidden">{children}</div>
+  );
+};
+
+const DashBoxTitle = ({ children, title }: DashboardComponentsProps) => {
+  return (
+    <div className="px-4 py-5 border-b border-gray-200 sm:px-6 flex justify-between items-center">
+      <h3 className="text-lg leading-6 font-medium text-gray-900">
+        {title}
+      </h3>
+      {children}
+    </div>
   );
 };
 
@@ -86,4 +98,4 @@ const Breadcrumb = ({ breadcrumb, actionButton }: BreadcrumbProps) => {
   );
 };
 
-export { DashboardMain, SideNavHeader, DashMainContent, Breadcrumb, DashBoxes };
+export { DashboardMain, SideNavHeader, DashMainContent, Breadcrumb, DashBoxes, DashBoxTitle };

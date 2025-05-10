@@ -2,8 +2,7 @@ import React, { ReactNode } from "react";
 import { Main } from "../components/HomeComponents.tsx";
 import Navbar from "../components/Navbar/Home/Navbar.tsx";
 import Footer from "../components/Footer/Home/Footer.tsx";
-import { Helmet, HelmetProvider } from "react-helmet-async";
-
+import { Helmet } from "react-helmet-async";
 
 interface HomeLayoutProps {
   title: string;

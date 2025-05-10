@@ -53,6 +53,10 @@ export interface Cars {
   rating?: number;
 }
 
+export interface CarsProps {
+  cars: Cars[];
+}
+
 interface HIW {
   id: number;
   title: string;
@@ -105,4 +109,13 @@ interface AvailableCars {
 
 export interface AvailableCarsProps {
   availableCars: AvailableCars[]
+}
+
+export interface CarType {
+  id: string;
+  name: string;
+}
+
+export interface CarTypesProps {
+  carTypes: CarType[];
 }

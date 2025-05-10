@@ -11,7 +11,7 @@ export default function AvailableCars({ availableCars }: AvailableCarsProps) {
           Available Cars
         </h3>
         <Link
-          to="#"
+          to={"/dashboard/my-rentals"}
           className="text-sm font-medium text-blue-600 hover:text-blue-500"
         >
           View all

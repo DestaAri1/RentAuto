@@ -1,20 +1,36 @@
-import React, { ReactNode, useState } from 'react'
-import { Breadcrumb, DashboardMain, DashMainContent } from '../components/DashboardComponents.tsx'
-import SideNav from '../components/Navbar/Dashboard/SideNav.tsx'
-import NavBar from '../components/Navbar/Dashboard/NavBar.tsx';
-import { BreadcrumbProps } from '../types/index.tsx';
+import React, { PropsWithChildren, ReactNode, useState } from "react";
+import {
+  Breadcrumb,
+  DashboardMain,
+  DashMainContent,
+} from "../components/DashboardComponents.tsx";
+import SideNav from "../components/Navbar/Dashboard/SideNav.tsx";
+import NavBar from "../components/Navbar/Dashboard/NavBar.tsx";
+import { BreadcrumbProps } from "../types/index.tsx";
+import { Helmet } from "react-helmet-async";
 
 interface DashboardLayoutProps {
-  children: ReactNode;
   onSearch?: (keyword: string) => void;
+  title: string
 }
 
-type CombinedProps = DashboardLayoutProps & BreadcrumbProps;
+type PageProps = PropsWithChildren;
 
-export default function DashboardLayout({children, breadcrumb, actionButton, onSearch}: CombinedProps) {
+type CombinedProps = DashboardLayoutProps & BreadcrumbProps & PageProps;
+
+export default function DashboardLayout({
+  children,
+  breadcrumb,
+  actionButton,
+  onSearch,
+  title
+}: CombinedProps) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   return (
     <DashboardMain>
+      <Helmet>
+        <title>{title} - RentAuto</title>
+      </Helmet>
       <SideNav setSidebarOpen={setSidebarOpen} sidebarOpen={sidebarOpen} />
       <DashMainContent>
         <NavBar setSidebarOpen={setSidebarOpen} onSearch={onSearch} />

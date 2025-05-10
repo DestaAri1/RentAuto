@@ -1,0 +1,123 @@
+import React, { useState } from "react";
+import { Table, TableBody, TableHead, Td, Th } from "../../../Table.tsx";
+import { Link } from "react-router-dom";
+import { CarsProps } from "../../../../types/index.tsx";
+import { DashBoxTitle } from "../../../DashboardComponents.tsx";
+
+export default function CarData({ cars }: CarsProps) {
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemPerPage = 5;
+
+  // ambil data perhalaman
+  const startIndex = (currentPage - 1) * itemPerPage;
+  const endIndex = startIndex + itemPerPage;
+  const curretCars = cars.slice(startIndex, endIndex);
+
+  return (
+    <div className="mt-8">
+      <div className="bg-white shadow rounded-lg">
+        <DashBoxTitle title={"Car List"}/>
+        <div className="flex flex-col">
+          <div className="overflow-x-auto">
+            <div className="py-2 align-middle inline-block min-w-full">
+              <Table>
+                <TableHead>
+                  <tr>
+                    <Th>No</Th>
+                    <Th>Name</Th>
+                    <Th>Types</Th>
+                    <Th>Seats</Th>
+                    <Th>Price</Th>
+                    <Th>Rating</Th>
+                    <Th>Owned</Th>
+                    <Th>Available</Th>
+                    <Th>Remains</Th>
+                    <Th className="relative">
+                      <span className="sr-only">Actions</span>
+                    </Th>
+                  </tr>
+                </TableHead>
+                <TableBody>
+                  {cars.length > 0 ? (
+                    curretCars.map((car, index) => (
+                      <tr key={car.id}>
+                        <Td className="font-medium text-gray-900">
+                          {startIndex + index + 1}
+                        </Td>
+                        <Td>{car.name}</Td>
+                        <Td>{car.type}</Td>
+                        <Td>{car.seats}</Td>
+                        <Td>${car.price.toLocaleString()} / day</Td>
+                        <Td>{car.rating ?? "-"}</Td>
+                        <Td>{car.amount}</Td>
+                        <Td>2</Td>
+                        <Td>1</Td>
+                        <Td className="text-right text-sm font-medium">
+                          <Link
+                            to="#"
+                            className="text-blue-600 hover:text-blue-900"
+                          >
+                            Update
+                          </Link>
+                          <Link
+                            to="#"
+                            className="text-red-600 hover:text-red-900 ml-4"
+                          >
+                            Delete
+                          </Link>
+                        </Td>
+                      </tr>
+                    ))
+                  ) : (
+                    <tr>
+                      <td
+                        colSpan={10}
+                        className="text-center px-6 py-4 text-sm text-gray-500"
+                      >
+                        No cars found.
+                      </td>
+                    </tr>
+                  )}
+                </TableBody>
+                <tfoot>
+                    <tr>
+                        <td colSpan={10}></td>
+                    </tr>
+                </tfoot>
+              </Table>
+              <div className="flex justify-center mt-4 space-x-2">
+                <button
+                  onClick={() =>
+                    setCurrentPage((prev) => Math.max(prev - 1, 1))
+                  }
+                  disabled={currentPage === 1}
+                  className="px-3 py-1 bg-gray-200 rounded disabled:opacity-50"
+                >
+                  Previous
+                </button>
+
+                <span className="px-3 py-1 text-gray-700">
+                  Page {currentPage} of {Math.ceil(cars.length / itemPerPage)}
+                </span>
+
+                <button
+                  onClick={() =>
+                    setCurrentPage((prev) =>
+                      Math.min(prev + 1, Math.ceil(cars.length / itemPerPage))
+                    )
+                  }
+                  disabled={
+                    currentPage === Math.ceil(cars.length / itemPerPage)
+                  }
+                  className="px-3 py-1 bg-gray-200 rounded disabled:opacity-50"
+                >
+                  Next
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
