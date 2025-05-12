@@ -1,5 +1,5 @@
 // src/hooks/useDebouncedSearch.ts
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback, useMemo } from "react";
 
 export function useDebouncedSearch<T>(
   data: T[],
@@ -8,8 +8,11 @@ export function useDebouncedSearch<T>(
   delay: number = 500
 ) {
   const [debouncedKeyword, setDebouncedKeyword] = useState("");
-  const [result, setResult] = useState<T[]>([]);
 
+  // Menggunakan useCallback untuk memastikan referensi fungsi filter tetap sama
+  const memoizedFilterFn = useCallback(filterFn, [filterFn]);
+
+  // Menggunakan useEffect hanya untuk debouncing
   useEffect(() => {
     const timer = setTimeout(() => {
       setDebouncedKeyword(keyword.toLowerCase());
@@ -18,14 +21,15 @@ export function useDebouncedSearch<T>(
     return () => clearTimeout(timer);
   }, [keyword, delay]);
 
-  useEffect(() => {
+  // Menggunakan useMemo untuk menghitung hasil filter tanpa memperbarui state
+  // Ini mencegah re-render tambahan
+  const result = useMemo(() => {
     if (!debouncedKeyword) {
-      setResult(data);
+      return data;
     } else {
-      const filtered = data.filter((item) => filterFn(item, debouncedKeyword));
-      setResult(filtered);
+      return data.filter((item) => memoizedFilterFn(item, debouncedKeyword));
     }
-  }, [debouncedKeyword, data, filterFn]);
+  }, [data, debouncedKeyword, memoizedFilterFn]);
 
   return result;
 }

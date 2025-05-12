@@ -10,6 +10,7 @@ import { AuthRoute, ProtectedRoute } from "./utils/RouteGuard.tsx";
 import Register from "./pages/Auth/Register.tsx";
 import CarsIndex from "./pages/Dashboard/Cars.tsx";
 import Bookings from "./pages/Dashboard/Bookings.tsx";
+import AddCar from "./pages/Dashboard/Car/AddCar.tsx";
 
 
 function App() {
@@ -48,6 +49,14 @@ function App() {
             element={
               <ProtectedRoute>
                 <CarsIndex />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/dashboard/my-rentals/add-car"
+            element={
+              <ProtectedRoute>
+                <AddCar />
               </ProtectedRoute>
             }
           />

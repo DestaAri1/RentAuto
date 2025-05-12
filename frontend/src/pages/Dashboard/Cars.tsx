@@ -6,6 +6,7 @@ import { useDebouncedSearch } from "../../hooks/useDebouncedSearch.tsx";
 import CarTypes from "../../components/Dashboard/Cars/CarTypes/CarTypes.tsx";
 import { DashBoxes } from "../../components/DashboardComponents.tsx";
 import CarData from "../../components/Dashboard/Cars/Car/CarData.tsx";
+import useModal from "../../hooks/useModal.tsx";
 
 export default function CarsIndex() {
   const breadcrumbItems = [
@@ -98,7 +99,7 @@ export default function CarsIndex() {
         amount: 5,
       },
       {
-        id: 9 ,
+        id: 9,
         name: "Tesla Model 3",
         image: "/images/model3.jpg",
         price: 45000,
@@ -120,13 +121,15 @@ export default function CarsIndex() {
       car.seats.toString().includes(keyword)
   );
 
+  const typeModal = useModal();
+
   return (
     <DashboardLayout
       title="My Rentals"
       breadcrumb={breadcrumbItems}
       actionButton={
         <Link
-          to={"#"}
+          to={"/dashboard/my-rentals/add-car"}
           className="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700"
         >
           Add Car
@@ -135,9 +138,15 @@ export default function CarsIndex() {
       onSearch={(text) => setSearchTerm(text)}
     >
       <div className="max-w-7xl mx-auto px-4 sm:px-6 md:px-8">
-        <CarData cars={filteredCars}/>
+        <CarData cars={filteredCars} />
         <DashBoxes>
-          <CarTypes />
+          <CarTypes
+            openModal={typeModal.openModal}
+            isOpen={typeModal.isOpen}
+            closeModal={typeModal.closeModal}
+            modalType={typeModal.modalType}
+            selectedItem={typeModal.selectedItem}
+          />
         </DashBoxes>
       </div>
     </DashboardLayout>

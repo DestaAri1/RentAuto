@@ -1,19 +1,22 @@
-import React, { ReactNode } from "react";
+import { PropsWithChildren } from "react";
 import { Link } from "react-router-dom";
 import { BreadcrumbProps } from "../types";
 
-interface DashboardComponentsProps {
+interface DashboardComponents {
   title?: string;
-  children?: ReactNode;
 }
 
-const DashboardMain = ({ children }: DashboardComponentsProps) => {
+type DashboardChildren = PropsWithChildren;
+
+type DashboardComponentsProps = DashboardComponents & DashboardChildren;
+
+const DashboardMain = ({ children }: DashboardChildren) => {
   return (
     <div className="h-screen flex overflow-hidden bg-gray-100">{children}</div>
   );
 };
 
-const SideNavHeader = ({ children }: DashboardComponentsProps) => {
+const SideNavHeader = ({ children }: DashboardChildren) => {
   return (
     <div className="hidden md:flex md:flex-shrink-0">
       <div className="flex flex-col w-64">
@@ -27,7 +30,7 @@ const SideNavHeader = ({ children }: DashboardComponentsProps) => {
   );
 };
 
-const DashMainContent = ({ children }: DashboardComponentsProps) => {
+const DashMainContent = ({ children }: DashboardChildren) => {
   return (
     <div className="flex flex-col w-0 flex-1 overflow-hidden">{children}</div>
   );
@@ -36,15 +39,13 @@ const DashMainContent = ({ children }: DashboardComponentsProps) => {
 const DashBoxTitle = ({ children, title }: DashboardComponentsProps) => {
   return (
     <div className="px-4 py-5 border-b border-gray-200 sm:px-6 flex justify-between items-center">
-      <h3 className="text-lg leading-6 font-medium text-gray-900">
-        {title}
-      </h3>
+      <h3 className="text-lg leading-6 font-medium text-gray-900">{title}</h3>
       {children}
     </div>
   );
 };
 
-const DashBoxes = ({ children }: DashboardComponentsProps) => {
+const DashBoxes = ({ children }: DashboardChildren) => {
   return (
     <div className="mt-8 grid grid-cols-1 gap-6 lg:grid-cols-2">{children}</div>
   );
@@ -98,4 +99,11 @@ const Breadcrumb = ({ breadcrumb, actionButton }: BreadcrumbProps) => {
   );
 };
 
-export { DashboardMain, SideNavHeader, DashMainContent, Breadcrumb, DashBoxes, DashBoxTitle };
+export {
+  DashboardMain,
+  SideNavHeader,
+  DashMainContent,
+  Breadcrumb,
+  DashBoxes,
+  DashBoxTitle,
+};

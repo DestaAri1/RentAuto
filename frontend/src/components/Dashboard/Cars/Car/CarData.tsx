@@ -3,6 +3,7 @@ import { Table, TableBody, TableHead, Td, Th } from "../../../Table.tsx";
 import { Link } from "react-router-dom";
 import { CarsProps } from "../../../../types/index.tsx";
 import { DashBoxTitle } from "../../../DashboardComponents.tsx";
+import { Star } from "lucide-react";
 
 export default function CarData({ cars }: CarsProps) {
   const [currentPage, setCurrentPage] = useState(1);
@@ -16,7 +17,7 @@ export default function CarData({ cars }: CarsProps) {
   return (
     <div className="mt-8">
       <div className="bg-white shadow rounded-lg">
-        <DashBoxTitle title={"Car List"}/>
+        <DashBoxTitle title={"Car List"} />
         <div className="flex flex-col">
           <div className="overflow-x-auto">
             <div className="py-2 align-middle inline-block min-w-full">
@@ -28,7 +29,6 @@ export default function CarData({ cars }: CarsProps) {
                     <Th>Types</Th>
                     <Th>Seats</Th>
                     <Th>Price</Th>
-                    <Th>Rating</Th>
                     <Th>Owned</Th>
                     <Th>Available</Th>
                     <Th>Remains</Th>
@@ -44,11 +44,15 @@ export default function CarData({ cars }: CarsProps) {
                         <Td className="font-medium text-gray-900">
                           {startIndex + index + 1}
                         </Td>
-                        <Td>{car.name}</Td>
+                        <Td hover="group relative hover:bg-gray-100 transition-colors duration-200">
+                          {car.name}
+                          <div className="absolute left-2 top-full -translate-y-1/2 ml-3 hidden group-hover:flex items-center gap-1 bg-white text-blue-600 px-3 py-1.5 rounded-lg shadow-lg z-10 whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                            {car.rating ?? "-"} <Star size={14}/>
+                          </div>
+                        </Td>
                         <Td>{car.type}</Td>
                         <Td>{car.seats}</Td>
                         <Td>${car.price.toLocaleString()} / day</Td>
-                        <Td>{car.rating ?? "-"}</Td>
                         <Td>{car.amount}</Td>
                         <Td>2</Td>
                         <Td>1</Td>
@@ -80,9 +84,9 @@ export default function CarData({ cars }: CarsProps) {
                   )}
                 </TableBody>
                 <tfoot>
-                    <tr>
-                        <td colSpan={10}></td>
-                    </tr>
+                  <tr>
+                    <td colSpan={10}></td>
+                  </tr>
                 </tfoot>
               </Table>
               <div className="flex justify-center mt-4 space-x-2">

@@ -1,4 +1,4 @@
-import React, { PropsWithChildren, ReactNode, useState } from "react";
+import { PropsWithChildren, useState } from "react";
 import {
   Breadcrumb,
   DashboardMain,
@@ -11,21 +11,22 @@ import { Helmet } from "react-helmet-async";
 
 interface DashboardLayoutProps {
   onSearch?: (keyword: string) => void;
-  title: string
+  title: string;
 }
 
 type PageProps = PropsWithChildren;
 
 type CombinedProps = DashboardLayoutProps & BreadcrumbProps & PageProps;
 
-export default function DashboardLayout({
+const DashboardLayout = ({
   children,
   breadcrumb,
   actionButton,
   onSearch,
-  title
-}: CombinedProps) {
+  title,
+}: CombinedProps) => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
+
   return (
     <DashboardMain>
       <Helmet>
@@ -43,4 +44,8 @@ export default function DashboardLayout({
       </DashMainContent>
     </DashboardMain>
   );
-}
+};
+
+DashboardLayout.displayName = "DashboardLayout";
+
+export default DashboardLayout;

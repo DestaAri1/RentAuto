@@ -3,6 +3,7 @@ import { ReactNode } from "react";
 interface TableProps {
   children?: ReactNode;
   className?: string;
+  hover?: string;
 }
 
 const Table = ({ children }: TableProps) => {
@@ -32,9 +33,9 @@ const TableBody = ({ children }: TableProps) => {
   );
 };
 
-const Td = ({ children, className = "text-sm text-gray-500" }: TableProps) => {
+const Td = ({ children, className = "text-sm text-gray-500", hover = "" }: TableProps) => {
   return (
-    <td className={`px-4 py-4 whitespace-nowrap ${className}`}>{children}</td>
+    <td className={`px-4 py-4 whitespace-nowrap ${className} ${hover}`}>{children}</td>
   );
 };
 
