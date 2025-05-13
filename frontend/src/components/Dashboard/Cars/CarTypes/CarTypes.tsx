@@ -1,10 +1,13 @@
-import React, { useState } from "react";
-import { Table, TableBody, TableHead, Td, Th } from "../../../Table.tsx";
 import { CarType } from "../../../../types/index.tsx";
 import { DashBoxTitle } from "../../../DashboardComponents.tsx";
 import { CreateCarTypeModal } from "./CreateCarTypeModal.tsx";
 import { UpdateCarTypeModal } from "./UpdateCarTypeModal.tsx";
 import { DeleteCarTypeModal } from "./DeleteCarTypeModal.tsx";
+import useCarType from "../../../../hooks/useCarType.tsx";
+import { lazy, Suspense } from "react";
+import Loading from "../../../Loading.tsx";
+
+const CarTypeTable = lazy(() => import("./CarTypeTable.tsx"));
 
 type ModalType = "create" | "update" | "delete";
 
@@ -23,39 +26,28 @@ export default function CarTypes({
   modalType,
   selectedItem,
 }: CarTypesProps) {
-  const [carTypes, setCarTypes] = useState<CarType[]>([
-    {
-      id: "dsadasdas",
-      name: "Sedan",
-    },
-    {
-      id: "12adasdsa",
-      name: "SUV",
-    },
-    {
-      id: "daszcxzdas",
-      name: "Electric",
-    },
-  ]);
+  const { carTypes, handleCreate, handleUpdate, handleDelete, fetchCarTypes } =
+    useCarType();
 
-  // Handle create car type
-  const handleCreateCarType = (newCarType: { name: string }) => {
-    const newId = Math.random().toString(36).substring(2, 15);
-    setCarTypes([...carTypes, { id: newId, name: newCarType.name }]);
+  // // Handle create car type
+  const handleCreateCarType = async (newCarType: { name: string }) => {
+    if (await handleCreate(newCarType)) {
+      fetchCarTypes();
+    }
   };
 
-  // Handle update car type
-  const handleUpdateCarType = (updatedCarType: CarType) => {
-    setCarTypes(
-      carTypes.map((carType) =>
-        carType.id === updatedCarType.id ? updatedCarType : carType
-      )
-    );
+  // // Handle update car type
+  const handleUpdateCarType = async (updatedCarType: CarType) => {
+    if (await handleUpdate(selectedItem?.id, updatedCarType.name)) {
+      fetchCarTypes();
+    }
   };
 
-  // Handle delete car type
-  const handleDeleteCarType = (carType: CarType) => {
-    setCarTypes(carTypes.filter((type) => type.id !== carType.id));
+  // // Handle delete car type
+  const handleDeleteCarType = async () => {
+    if (await handleDelete(selectedItem?.id)) {
+      fetchCarTypes()
+    }
   };
 
   return (
@@ -71,41 +63,9 @@ export default function CarTypes({
       <div className="flex flex-col">
         <div className="overflow-x-auto">
           <div className="py-2 align-middle inline-block min-w-full">
-            <Table>
-              <TableHead>
-                <tr>
-                  <Th>No</Th>
-                  <Th>Name</Th>
-                  <Th className="relative">
-                    <span className="sr-only">Actions</span>
-                  </Th>
-                </tr>
-              </TableHead>
-              <TableBody>
-                {carTypes.map((car, index) => (
-                  <tr key={car.id}>
-                    <Td className="font-medium text-gray-900">{index + 1}</Td>
-                    <Td>{car.name}</Td>
-                    <Td className="text-right text-sm font-medium">
-                      <button
-                        onClick={() => openModal(car, "update")}
-                        className="text-blue-600 hover:text-blue-900"
-                        type="button"
-                      >
-                        Update
-                      </button>
-                      <button
-                        onClick={() => openModal(car, "delete")}
-                        className="text-red-600 hover:text-red-900 ml-4"
-                        type="button"
-                      >
-                        Delete
-                      </button>
-                    </Td>
-                  </tr>
-                ))}
-              </TableBody>
-            </Table>
+            <Suspense fallback={<Loading name="Loading car types" />}>
+              <CarTypeTable carTypes={carTypes} openModal={openModal} />
+            </Suspense>
           </div>
         </div>
       </div>
