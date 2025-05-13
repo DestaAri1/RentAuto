@@ -12,6 +12,7 @@ type Car struct {
 	ID        uuid.UUID      `json:"id" gorm:"type:char(36);primaryKey"`
 	Name      string         `json:"name" gorm:"not null"`
 	Unit	  int			 `json:"unit" gorm:"not null"`
+	Available int			 `json:"available" gorm:"not null"`
 	Price     float64        `json:"price" gorm:"not null"`
 	TypeId    uuid.UUID      `json:"car_type_id" gorm:"not null"`
 	Type      CarTypes       `json:"car_type" gorm:"foreignKey:TypeId;references:ID;onDelete:cascade"`

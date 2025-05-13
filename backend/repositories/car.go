@@ -26,6 +26,8 @@ func (r *CarRepository) GetCars(ctx context.Context) ([]*models.Car, error) {
 func (r *CarRepository) CreateCar(ctx context.Context, formData *models.FormCar) error {
 	cars := &models.Car{
 		Name: formData.Name,
+		Unit: formData.Unit,
+		Available: formData.Unit,
 		Price: formData.Price,
 		TypeId: formData.TypeId,
 		Seats: formData.Seats,
