@@ -25,6 +25,8 @@ func (v *CarValidator) HandleFieldError(field string, tag string, param string) 
 		return v.handleSeatsValidation(tag, param)
 	case "Rating":
 		return v.handleRatingValidation(tag, param)
+	case "Image":
+		return v.handleImageValidation(tag, param)
 	default:
 		return ""
 	}
@@ -95,6 +97,17 @@ func (v *CarValidator) handleRatingValidation(tag string, param string) string {
 		return "Rating must be at least 1"
 	case "max":
 		return "Rating cannot exceed 5"
+	default:
+		return ""
+	}
+}
+
+func (v *CarValidator) handleImageValidation(tag string, param string) string {
+	switch tag {
+	case "required":
+		return "Image is required"
+	case "image":
+		return "File must be a valid image (jpg, jpeg, png)"
 	default:
 		return ""
 	}

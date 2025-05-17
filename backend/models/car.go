@@ -2,6 +2,7 @@ package models
 
 import (
 	"context"
+	"mime/multipart"
 	"time"
 
 	"github.com/google/uuid"
@@ -11,6 +12,7 @@ import (
 type Car struct {
 	ID        uuid.UUID      `json:"id" gorm:"type:char(36);primaryKey"`
 	Name      string         `json:"name" gorm:"not null"`
+	Slug	  string		 `json:"slug" gorm:"not null"`
 	Unit	  int			 `json:"unit" gorm:"not null"`
 	Available int			 `json:"available" gorm:"not null"`
 	Price     float64        `json:"price" gorm:"not null"`
@@ -32,12 +34,20 @@ type FormCar struct {
 	Price  float64   `json:"price" validate:"required,gt=0"`
 	TypeId uuid.UUID `json:"type_id" validate:"required,uuid"`
 	Seats  int       `json:"seats" validate:"required,min=1,max=100"`
+	Image  string    `json:"image" validate:"required"`
+	ImageFile   *multipart.FileHeader `json:"-" form:"image"`
 	Rating int       `json:"rating" validate:"required,min=1,max=5"`
 }
 
 type CarRepository interface {
 	GetCars(ctx context.Context) ([]*Car, error)
-	CreateCar(ctx context.Context, formData *FormCar) error
-	UpdateCar(ctx context.Context, updateData map[string]interface{}, carId uuid.UUID) error
+	GetOneCar(ctx context.Context, carId uuid.UUID) (*Car, error)
+	CreateCar(ctx context.Context, formData *FormCar, userId uuid.UUID) error
+	UpdateCar(ctx context.Context, updateData map[string]interface{}, carId uuid.UUID, userId uuid.UUID) error
 	DeleteCar(ctx context.Context, carId uuid.UUID) error
+}
+
+func (r *Car) BeforeCreate(tx *gorm.DB) (err error) {
+	r.ID = uuid.New()
+	return
 }
