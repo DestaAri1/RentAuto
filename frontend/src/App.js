@@ -5,13 +5,13 @@ import Dashboard from "./pages/Dashboard/Dashboard.tsx";
 import { Rent } from "./pages/Home/Rent.tsx";
 import { Home } from "./pages/Home/Home.tsx";
 import { AuthProvider } from "./context/AuthContext.tsx";
-import React from 'react'
+import React from "react";
 import { AuthRoute, ProtectedRoute } from "./utils/RouteGuard.tsx";
 import Register from "./pages/Auth/Register.tsx";
 import CarsIndex from "./pages/Dashboard/Cars.tsx";
 import Bookings from "./pages/Dashboard/Bookings.tsx";
 import AddCar from "./pages/Dashboard/Car/AddCar.tsx";
-
+import EditCar from "./pages/Dashboard/Car/EditCar.tsx";
 
 function App() {
   return (
@@ -57,6 +57,14 @@ function App() {
             element={
               <ProtectedRoute>
                 <AddCar />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/dashboard/my-rentals/edit-car/:slug/:id"
+            element={
+              <ProtectedRoute>
+                <EditCar />
               </ProtectedRoute>
             }
           />

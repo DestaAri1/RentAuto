@@ -1,23 +1,48 @@
-import React, { useState } from "react";
+import React, { useMemo } from "react";
 import { Table, TableBody, TableHead, Td, Th } from "../../../Table.tsx";
 import { Link } from "react-router-dom";
-import { CarsProps } from "../../../../types/index.tsx";
+import { Cars, CarsProps } from "../../../../types/index.tsx";
 import { DashBoxTitle } from "../../../DashboardComponents.tsx";
 import { Star } from "lucide-react";
+import { usePagination } from "../../../../hooks/usePagination.tsx";
 
-export default function CarData({ cars }: CarsProps) {
-  const [currentPage, setCurrentPage] = useState(1);
-  const itemPerPage = 5;
+interface CarModalProps {
+  onUpdate: (car: Cars) => void;
+  onDelete: (car: Cars) => void;
+}
 
-  // ambil data perhalaman
-  const startIndex = (currentPage - 1) * itemPerPage;
-  const endIndex = startIndex + itemPerPage;
-  const curretCars = cars.slice(startIndex, endIndex);
+type CombinedProps = CarsProps & CarModalProps;
+
+export default function CarData({ cars, onDelete }: CombinedProps) {
+  const itemsPerPage = 5;
+
+  // Menggunakan generics untuk tipe car
+  const {
+    currentPage,
+    totalPages,
+    paginatedItems,
+    goToNextPage,
+    goToPreviousPage,
+    isFirstPage,
+    isLastPage,
+  } = usePagination<any>({
+    totalItems: cars.length,
+    itemsPerPage,
+  });
+
+  // Menggunakan useMemo untuk mencegah re-render yang tidak perlu
+  const currentCars = useMemo(
+    () => paginatedItems(cars),
+    [cars, paginatedItems]
+  );
+
+  // Menghitung indeks awal untuk penomoran
+  const startIndex = (currentPage - 1) * itemsPerPage;
 
   return (
     <div className="mt-8">
       <div className="bg-white shadow rounded-lg">
-        <DashBoxTitle title={"Car List"} />
+        <DashBoxTitle title="Car List" />
         <div className="flex flex-col">
           <div className="overflow-x-auto">
             <div className="py-2 align-middle inline-block min-w-full">
@@ -39,36 +64,37 @@ export default function CarData({ cars }: CarsProps) {
                 </TableHead>
                 <TableBody>
                   {cars.length > 0 ? (
-                    curretCars.map((car, index) => (
+                    currentCars.map((car, index) => (
                       <tr key={car.id}>
                         <Td className="font-medium text-gray-900">
                           {startIndex + index + 1}
                         </Td>
-                        <Td hover="group relative hover:bg-gray-100 transition-colors duration-200">
+                        <Td className="group relative hover:bg-gray-100 transition-colors duration-200">
                           {car.name}
                           <div className="absolute left-2 top-full -translate-y-1/2 ml-3 hidden group-hover:flex items-center gap-1 bg-white text-blue-600 px-3 py-1.5 rounded-lg shadow-lg z-10 whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                            {car.rating ?? "-"} <Star size={14}/>
+                            {car.rating ?? "-"} <Star size={14} />
                           </div>
                         </Td>
-                        <Td>{car.type}</Td>
+                        <Td>{car.car_type.name}</Td>
                         <Td>{car.seats}</Td>
                         <Td>${car.price.toLocaleString()} / day</Td>
-                        <Td>{car.amount}</Td>
+                        <Td>{car.unit}</Td>
                         <Td>2</Td>
                         <Td>1</Td>
                         <Td className="text-right text-sm font-medium">
                           <Link
-                            to="#"
+                            to={`/dashboard/my-rentals/edit-car/${car.slug}/${car.id}`}
                             className="text-blue-600 hover:text-blue-900"
                           >
                             Update
                           </Link>
-                          <Link
-                            to="#"
+                          <button
+                            onClick={() => onDelete(car)}
                             className="text-red-600 hover:text-red-900 ml-4"
+                            type="button"
                           >
                             Delete
-                          </Link>
+                          </button>
                         </Td>
                       </tr>
                     ))
@@ -91,28 +117,20 @@ export default function CarData({ cars }: CarsProps) {
               </Table>
               <div className="flex justify-center mt-4 space-x-2">
                 <button
-                  onClick={() =>
-                    setCurrentPage((prev) => Math.max(prev - 1, 1))
-                  }
-                  disabled={currentPage === 1}
+                  onClick={goToPreviousPage}
+                  disabled={isFirstPage}
                   className="px-3 py-1 bg-gray-200 rounded disabled:opacity-50"
                 >
                   Previous
                 </button>
 
                 <span className="px-3 py-1 text-gray-700">
-                  Page {currentPage} of {Math.ceil(cars.length / itemPerPage)}
+                  Page {currentPage} of {totalPages}
                 </span>
 
                 <button
-                  onClick={() =>
-                    setCurrentPage((prev) =>
-                      Math.min(prev + 1, Math.ceil(cars.length / itemPerPage))
-                    )
-                  }
-                  disabled={
-                    currentPage === Math.ceil(cars.length / itemPerPage)
-                  }
+                  onClick={goToNextPage}
+                  disabled={isLastPage}
                   className="px-3 py-1 bg-gray-200 rounded disabled:opacity-50"
                 >
                   Next

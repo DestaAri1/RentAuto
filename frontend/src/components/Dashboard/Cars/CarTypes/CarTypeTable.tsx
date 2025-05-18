@@ -4,12 +4,14 @@ import { CarType } from "../../../../types/index.tsx";
 
 interface CarTypeTableProps {
   carTypes: CarType[];
-  openModal: (car: CarType, action: "update" | "delete") => void;
+  onUpdate: (car: CarType) => void;
+  onDelete: (car: CarType) => void;
 }
 
 export default function CarTypeTable({
   carTypes,
-  openModal,
+  onUpdate,
+  onDelete,
 }: CarTypeTableProps) {
   return (
     <Table>
@@ -30,14 +32,14 @@ export default function CarTypeTable({
               <Td>{car.name}</Td>
               <Td className="text-right text-sm font-medium">
                 <button
-                  onClick={() => openModal(car, "update")}
+                  onClick={() => onUpdate(car)}
                   className="text-blue-600 hover:text-blue-900"
                   type="button"
                 >
                   Update
                 </button>
                 <button
-                  onClick={() => openModal(car, "delete")}
+                  onClick={() => onDelete(car)}
                   className="text-red-600 hover:text-red-900 ml-4"
                   type="button"
                 >

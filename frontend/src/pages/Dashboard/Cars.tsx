@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from "react";
+import React, { useState } from "react";
 import DashboardLayout from "../../layout/DashboardLayout.tsx";
 import { Link } from "react-router-dom";
 import { Cars } from "../../types/index.tsx";
@@ -6,6 +6,8 @@ import { useDebouncedSearch } from "../../hooks/useDebouncedSearch.tsx";
 import CarTypes from "../../components/Dashboard/Cars/CarTypes/CarTypes.tsx";
 import { DashBoxes } from "../../components/DashboardComponents.tsx";
 import CarData from "../../components/Dashboard/Cars/Car/CarData.tsx";
+import useCar from "../../hooks/useCar.tsx";
+import DeleteCarModal from "../../components/Dashboard/Cars/Car/DeleteCarModal.tsx";
 import useModal from "../../hooks/useModal.tsx";
 
 export default function CarsIndex() {
@@ -16,112 +18,33 @@ export default function CarsIndex() {
 
   const [searchTerm, setSearchTerm] = useState("");
 
-  const carsData = useMemo<Cars[]>(
-    () => [
-      {
-        id: 1,
-        name: "Toyota Camry",
-        image: "/images/camry.jpg",
-        price: 35000,
-        type: "Sedan",
-        seats: 5,
-        rating: 4.5,
-        amount: 3,
-      },
-      {
-        id: 2,
-        name: "Honda CR-V",
-        image: "/images/crv.jpg",
-        price: 32000,
-        type: "SUV",
-        seats: 7,
-        rating: 4.7,
-        amount: 5,
-      },
-      {
-        id: 3,
-        name: "Tesla Model 3",
-        image: "/images/model3.jpg",
-        price: 45000,
-        type: "Electric",
-        seats: 5,
-        rating: 4.9,
-        amount: 2,
-      },
-      {
-        id: 4,
-        name: "Toyota Camry",
-        image: "/images/camry.jpg",
-        price: 35000,
-        type: "Sedan",
-        seats: 5,
-        rating: 4.5,
-        amount: 3,
-      },
-      {
-        id: 5,
-        name: "Honda CR-V",
-        image: "/images/crv.jpg",
-        price: 32000,
-        type: "SUV",
-        seats: 7,
-        rating: 4.7,
-        amount: 5,
-      },
-      {
-        id: 6,
-        name: "Tesla Model 3",
-        image: "/images/model3.jpg",
-        price: 45000,
-        type: "Electric",
-        seats: 5,
-        rating: 4.9,
-        amount: 2,
-      },
-      {
-        id: 7,
-        name: "Toyota Camry",
-        image: "/images/camry.jpg",
-        price: 35000,
-        type: "Sedan",
-        seats: 5,
-        rating: 4.5,
-        amount: 3,
-      },
-      {
-        id: 8,
-        name: "Honda CR-V",
-        image: "/images/crv.jpg",
-        price: 32000,
-        type: "SUV",
-        seats: 7,
-        rating: 4.7,
-        amount: 5,
-      },
-      {
-        id: 9,
-        name: "Tesla Model 3",
-        image: "/images/model3.jpg",
-        price: 45000,
-        type: "Electric",
-        seats: 5,
-        rating: 4.9,
-        amount: 2,
-      },
-    ],
-    []
-  );
+  const { cars, handleDelete, fetchCars } = useCar();
 
   const filteredCars = useDebouncedSearch<Cars>(
-    carsData,
+    cars,
     searchTerm,
     (car, keyword) =>
       car.name.toLowerCase().includes(keyword) ||
-      car.type.toLowerCase().includes(keyword) ||
+      car.car_type.name.toLowerCase().includes(keyword) ||
       car.seats.toString().includes(keyword)
   );
 
-  const typeModal = useModal();
+  const deleteModal = useModal();
+
+  const openDeleteModal = (car: Cars) => {
+    if (car && car.id) {
+      deleteModal.openModal(car);
+    } else {
+      console.error("Cannot update: Invalid car type data", car);
+    }
+  };
+
+  const handleDeleteConfirm = async () => {
+    if (await handleDelete(deleteModal.selectedItem.id)) {
+      fetchCars()
+      deleteModal.closeModal()
+    }
+  };
 
   return (
     <DashboardLayout
@@ -138,17 +61,17 @@ export default function CarsIndex() {
       onSearch={(text) => setSearchTerm(text)}
     >
       <div className="max-w-7xl mx-auto px-4 sm:px-6 md:px-8">
-        <CarData cars={filteredCars} />
+        <CarData cars={filteredCars} onDelete={openDeleteModal} />
         <DashBoxes>
-          <CarTypes
-            openModal={typeModal.openModal}
-            isOpen={typeModal.isOpen}
-            closeModal={typeModal.closeModal}
-            modalType={typeModal.modalType}
-            selectedItem={typeModal.selectedItem}
-          />
+          <CarTypes />
         </DashBoxes>
       </div>
+      <DeleteCarModal
+        car={deleteModal.selectedItem}
+        isOpen={deleteModal.isOpen}
+        onClose={deleteModal.closeModal}
+        onConfirm={handleDeleteConfirm}
+      />
     </DashboardLayout>
   );
 }

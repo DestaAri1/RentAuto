@@ -77,6 +77,7 @@ const rentalStats = [
   { label: "Customer Ratings", value: "4.8/5", change: "+0.2", icon: Users },
 ];
 
+
 const Dashboard: React.FC = () => {
   const getStatusColor = (status: string) => {
     switch (status) {

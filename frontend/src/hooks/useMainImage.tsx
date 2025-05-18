@@ -1,40 +1,37 @@
-import { useState, useRef } from "react";
+import { useState, useRef, useCallback } from "react";
 
-interface UseMainImageReturn {
-  preview: string | null;
-  fileInputRef: React.RefObject<HTMLInputElement | null>;
-  handleImageChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
-  handleImageClick: () => void;
-  setPreview: React.Dispatch<React.SetStateAction<string | null>>;
-}
-
-export const useMainImage = (
-  onImageSelect: (file: File) => void
-): UseMainImageReturn => {
+export const useMainImage = () => {
+  const [mainImage, setMainImage] = useState<File | null>(null);
   const [preview, setPreview] = useState<string | null>(null);
-  const fileInputRef = useRef<HTMLInputElement>(null);
+  const fileInputRef = useRef<HTMLInputElement | null>(null);
 
-  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>): void => {
-    const file = e.target.files?.[0];
-    if (file) {
-      onImageSelect(file);
-      const reader = new FileReader();
-      reader.onloadend = (): void => {
-        setPreview(reader.result as string);
-      };
-      reader.readAsDataURL(file);
+  // Handle main image selection
+  const handleImageChange = useCallback(
+    (e: React.ChangeEvent<HTMLInputElement>) => {
+      if (e.target.files && e.target.files[0]) {
+        const selectedFile = e.target.files[0];
+        setMainImage(selectedFile);
+
+        // Create preview URL
+        const previewUrl = URL.createObjectURL(selectedFile);
+        setPreview(previewUrl);
+      }
+    },
+    []
+  );
+
+  // Handle main image upload click
+  const handleImageClick = useCallback(() => {
+    if (fileInputRef.current) {
+      fileInputRef.current.click();
     }
-  };
-
-  const handleImageClick = (): void => {
-    fileInputRef.current?.click();
-  };
+  }, []);
 
   return {
+    mainImage,
     preview,
     fileInputRef,
     handleImageChange,
     handleImageClick,
-    setPreview,
   };
 };

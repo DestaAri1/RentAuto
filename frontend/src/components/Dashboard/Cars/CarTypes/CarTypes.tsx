@@ -6,47 +6,51 @@ import { DeleteCarTypeModal } from "./DeleteCarTypeModal.tsx";
 import useCarType from "../../../../hooks/useCarType.tsx";
 import { lazy, Suspense } from "react";
 import Loading from "../../../Loading.tsx";
+import useModal from "../../../../hooks/useModal.tsx";
 
 const CarTypeTable = lazy(() => import("./CarTypeTable.tsx"));
 
-type ModalType = "create" | "update" | "delete";
-
-interface CarTypesProps {
-  openModal: (data: any, type: ModalType) => void;
-  isOpen: boolean;
-  closeModal: () => void;
-  modalType: ModalType;
-  selectedItem: CarType | null;
-}
-
-export default function CarTypes({
-  openModal,
-  isOpen,
-  closeModal,
-  modalType,
-  selectedItem,
-}: CarTypesProps) {
+export default function CarTypes() {
   const { carTypes, handleCreate, handleUpdate, handleDelete, fetchCarTypes } =
     useCarType();
 
-  // // Handle create car type
+  const createTypeModal = useModal();
+  const updateTypeModal = useModal();
+  const deleteTypeModal = useModal();
+
+  // Handle create car type
   const handleCreateCarType = async (newCarType: { name: string }) => {
     if (await handleCreate(newCarType)) {
       fetchCarTypes();
+      createTypeModal.closeModal();
     }
   };
 
-  // // Handle update car type
+  // Handle opening update modal with proper data
+  const openUpdateModal = (carType: CarType) => {
+    if (carType && carType.id) {
+      updateTypeModal.openModal(carType);
+    } else {
+      console.error("Cannot update: Invalid car type data", carType);
+    }
+  };
+
+  // Handle update car type
   const handleUpdateCarType = async (updatedCarType: CarType) => {
-    if (await handleUpdate(selectedItem?.id, updatedCarType.name)) {
+    if (
+      updatedCarType &&
+      updatedCarType.id &&
+      (await handleUpdate(updatedCarType.id, updatedCarType.name))
+    ) {
       fetchCarTypes();
+      updateTypeModal.closeModal();
     }
   };
 
   // // Handle delete car type
   const handleDeleteCarType = async () => {
-    if (await handleDelete(selectedItem?.id)) {
-      fetchCarTypes()
+    if (await handleDelete(deleteTypeModal.selectedItem.id)) {
+      fetchCarTypes();
     }
   };
 
@@ -54,7 +58,7 @@ export default function CarTypes({
     <div className="bg-white shadow rounded-lg">
       <DashBoxTitle title="Car Types">
         <button
-          onClick={() => openModal(null, "create")}
+          onClick={() => createTypeModal.openModal()}
           className="text-sm font-medium text-blue-600 hover:text-blue-500"
         >
           Add Type
@@ -64,7 +68,11 @@ export default function CarTypes({
         <div className="overflow-x-auto">
           <div className="py-2 align-middle inline-block min-w-full">
             <Suspense fallback={<Loading name="Loading car types" />}>
-              <CarTypeTable carTypes={carTypes} openModal={openModal} />
+              <CarTypeTable
+                carTypes={carTypes}
+                onUpdate={openUpdateModal}
+                onDelete={(car) => deleteTypeModal.openModal(car)}
+              />
             </Suspense>
           </div>
         </div>
@@ -72,25 +80,25 @@ export default function CarTypes({
 
       {/* Create Car Type Modal */}
       <CreateCarTypeModal
-        isOpen={isOpen && modalType === "create"}
-        onClose={closeModal}
+        isOpen={createTypeModal.isOpen}
+        onClose={createTypeModal.closeModal}
         onSubmit={handleCreateCarType}
       />
 
       {/* Update Car Type Modal */}
       <UpdateCarTypeModal
-        isOpen={isOpen && modalType === "update"}
-        onClose={closeModal}
+        isOpen={updateTypeModal.isOpen}
+        onClose={updateTypeModal.closeModal}
         onSubmit={handleUpdateCarType}
-        carType={selectedItem}
+        carType={updateTypeModal.selectedItem}
       />
 
       {/* Delete Car Type Modal */}
       <DeleteCarTypeModal
-        isOpen={isOpen && modalType === "delete"}
-        onClose={closeModal}
+        isOpen={deleteTypeModal.isOpen}
+        onClose={deleteTypeModal.closeModal}
         onConfirm={handleDeleteCarType}
-        carType={selectedItem}
+        carType={deleteTypeModal.selectedItem}
       />
     </div>
   );

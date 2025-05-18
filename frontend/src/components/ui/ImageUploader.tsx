@@ -22,6 +22,7 @@ export const ImageUploader: FC<ImageUploaderProps> = ({
     <div className="relative group">
       <input
         type="file"
+        name="image"
         ref={imageInputRef}
         accept="image/*"
         onChange={handleImageChange}

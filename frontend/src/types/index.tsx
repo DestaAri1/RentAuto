@@ -43,14 +43,17 @@ export interface HomePageProps {
 }
 
 export interface Cars {
-  id: number;
+  id: string;
   name: string;
-  image: string;
-  amount?: number;
+  slug: string
   price: number;
-  type: string;
+  type_id: string;
+  type_name?: string; // For display purposes
   seats: number;
-  rating?: number;
+  unit: number;
+  rating: number;
+  image_url?: string;
+  car_type : CarType
 }
 
 export interface CarsProps {

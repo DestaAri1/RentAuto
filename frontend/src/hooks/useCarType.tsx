@@ -16,7 +16,6 @@ export default function useCarType() {
     setIsLoading(true);
     try {
       const { data = [] } = await GetAllCarTypes();
-
       setCarTypes(data);
     } catch (error) {
       console.error("Failed to fetch car types:", error);
@@ -44,7 +43,7 @@ export default function useCarType() {
     }
   };
 
-  const handleUpdate = async (id, payload) => {
+  const handleUpdate = async (id: string, payload) => {
     setIsLoading(true);
     const data = {
       name: payload,
@@ -59,11 +58,10 @@ export default function useCarType() {
     }
   };
 
-  const handleDelete = async (id) => {
+  const handleDelete = async (id: string) => {
     setIsLoading(true);
     try {
       const response = await DeleteCarType(id);
-      console.log(response);
       return response;
     } catch (error) {
       console.log(error);
