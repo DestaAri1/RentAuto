@@ -1,11 +1,16 @@
 package validators
 
-import "github.com/DestaAri1/RentAuto/utils"
+import (
+	"fmt"
+	"strings"
 
-// CarValidator mengimplementasikan ValidationErrorHandler untuk form car
+	"github.com/DestaAri1/RentAuto/utils"
+)
+
+// CarTypesValidator mengimplementasikan ValidationErrorHandler untuk form car type
 type CarTypesValidator struct{}
 
-// NewCarValidator membuat instance baru dari CarValidator
+// NewCarTypesValidator membuat instance baru dari CarTypesValidator
 func NewCarTypesValidator() utils.ValidationErrorHandler {
 	return &CarTypesValidator{}
 }
@@ -24,6 +29,13 @@ func (v *CarTypesValidator) handleNameValidation(tag string, param string) strin
 	switch tag {
 	case "required":
 		return "Name field is required"
+	case "unique":
+		// Extract table.column from param for better error message
+		parts := strings.Split(param, ".")
+		if len(parts) >= 2 {
+			return fmt.Sprintf("Name already exists in %s", parts[0])
+		}
+		return "Name must be unique"
 	default:
 		return ""
 	}

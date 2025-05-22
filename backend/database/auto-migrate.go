@@ -10,6 +10,7 @@ func DBMigrator(db *gorm.DB) error {
 		&models.User{},
 		&models.Role{},
 		&models.CarTypes{},
-		&models.Car{},
+		&models.CarParent{},
+		&models.CarChild{},
 	)
 }

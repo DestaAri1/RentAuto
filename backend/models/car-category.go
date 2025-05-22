@@ -1,3 +1,4 @@
+// models/car_types.go
 package models
 
 import (
@@ -9,17 +10,23 @@ import (
 )
 
 type CarTypes struct {
-	ID 		  uuid.UUID 	 `json:"id" gorm:"type:char(36);primaryKey"`
-	Name 	  string 		 `json:"name" gorm:"not null"`
-	UserId 	  uuid.UUID 	 `json:"user_id" gorm:"not null"`
-	User	  User 			 `json:"user" gorm:"foreignKey:UserId;references:ID;onDelete:cascade"`
+	ID        uuid.UUID      `json:"id" gorm:"type:char(36);primaryKey"`
+	Name      string         `json:"name" gorm:"not null;unique"`
+	UserId    uuid.UUID      `json:"user_id" gorm:"not null"`
+	User      User           `json:"user" gorm:"foreignKey:UserId;references:ID;onDelete:cascade"`
 	CreatedAt time.Time      `json:"created_at"`
 	UpdatedAt time.Time      `json:"updated_at"`
 	DeletedAt gorm.DeletedAt `json:"deleted_at" gorm:"index"`
 }
 
+// FormCarTypes for creating new car types
 type FormCarTypes struct {
-	Name string `json:"name" validate:"required"`
+	Name string `json:"name" validate:"required,unique=car_types.name"`
+}
+
+// FormUpdateCarTypes for updating car types (can be used with ID exclusion)
+type FormUpdateCarTypes struct {
+	Name string `json:"name" validate:"omitempty,unique=car_types.name"`
 }
 
 type CarTypesRepository interface {

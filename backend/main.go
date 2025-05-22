@@ -7,8 +7,9 @@ import (
 	"github.com/DestaAri1/RentAuto/handlers"
 	"github.com/DestaAri1/RentAuto/middlewares"
 	"github.com/DestaAri1/RentAuto/models"
-	repository "github.com/DestaAri1/RentAuto/repositories"
+	"github.com/DestaAri1/RentAuto/repositories"
 	"github.com/DestaAri1/RentAuto/services"
+	"github.com/DestaAri1/RentAuto/validatiors"
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/cors"
 	"gorm.io/gorm"
@@ -17,7 +18,7 @@ import (
 // App configuration
 func setupApp() *fiber.App {
 	app := fiber.New(fiber.Config{
-		AppName:      "TicketBooking",
+		AppName:      "Rent Car",
 		ServerHeader: "Fiber",
 	})
 
@@ -33,17 +34,19 @@ func setupApp() *fiber.App {
 
 // Repository initialization
 type AppRepositories struct {
-	auth models.AuthRepository
-	cars models.CarRepository
-	roles models.RoleRepository
+	auth     models.AuthRepository
+	cars     models.CarRepository
+	carChild models.CarChildRepository
+	roles    models.RoleRepository
 	carTypes models.CarTypesRepository
 }
 
 func setupRepositories(database *gorm.DB) AppRepositories {
 	return AppRepositories{
-		auth: repository.NewAuthRepository(database),
-		cars: repository.NewCarRepository(database),
-		roles: repository.NewRoleRepository(database),
+		auth:     repository.NewAuthRepository(database),
+		cars:     repository.NewCarRepository(database),
+		carChild: repository.NewCarChildRepository(database),
+		roles:    repository.NewRoleRepository(database),
 		carTypes: repository.NewCarTypeRepositories(database),
 	}
 }
@@ -59,11 +62,16 @@ func setupServices(repos AppRepositories) AppServices {
 	}
 }
 
+// Validator initialization
+func setupValidator(database *gorm.DB) *validators.ValidatorManager {
+	return validators.NewValidatorManager(database)
+}
+
 // Route setup
-func setupRoutes(app *fiber.App, database *gorm.DB, repos AppRepositories, services AppServices) {
+func setupRoutes(app *fiber.App, database *gorm.DB, repos AppRepositories, services AppServices, validatorManager *validators.ValidatorManager) {
 	// API group
 	api := app.Group("/api")
-	
+
 	// Public routes
 	auth := api.Group("/auth")
 	handlers.NewAuthHandler(auth, services.auth)
@@ -73,12 +81,12 @@ func setupRoutes(app *fiber.App, database *gorm.DB, repos AppRepositories, servi
 	protected := api.Use(middlewares.AuthProtected(database))
 
 	//Public Protected Routes
-
+	//
 	//  User routes
-
+	//
 	//  Admin routes
 	handlers.NewCarHandler(protected.Group("/admin/cars"), repos.cars, repos.roles)
-	handlers.NewCarTypesHandler(protected.Group("/admin/car-types"), repos.carTypes, repos.roles)
+	handlers.NewCarTypesHandler(protected.Group("/admin/car-types"), repos.carTypes, repos.roles, validatorManager)
 
 	//  Common routes
 }
@@ -89,9 +97,10 @@ func main() {
 	app := setupApp()
 	repositories := setupRepositories(database)
 	services := setupServices(repositories)
+	validatorManager := setupValidator(database)
 
 	// Setup routes
-	setupRoutes(app, database, repositories, services)
+	setupRoutes(app, database, repositories, services, validatorManager)
 
 	// Start server with more informative logging
 	log.Println("Server starting on http://localhost:3000")

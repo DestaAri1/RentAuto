@@ -1,3 +1,4 @@
+// handlers/car_types_handler.go
 package handlers
 
 import (
@@ -7,19 +8,38 @@ import (
 	"github.com/DestaAri1/RentAuto/models"
 	"github.com/DestaAri1/RentAuto/policy"
 	validators "github.com/DestaAri1/RentAuto/validatiors"
-	"github.com/go-playground/validator/v10"
 	"github.com/gofiber/fiber/v2"
 	"github.com/google/uuid"
 )
 
 type CarTypesRepository struct {
 	BaseHandler
-	repository    models.CarTypesRepository
-	carTypePolicy *policy.CarTypesPolicy
+	Helper
+	repository       models.CarTypesRepository
+	carTypePolicy    *policy.CarTypesPolicy
+	validatorManager *validators.ValidatorManager
+}
+
+// CheckPermission verifies user has permission to perform an action
+func (h *CarTypesRepository) CheckPermission(ctx context.Context, roleId uuid.UUID, action string) error {
+	var err error
+
+	switch action {
+	case "create":
+		err = h.carTypePolicy.CanCreateCarTypes(ctx, roleId)
+	case "update":
+		err = h.carTypePolicy.CanUpdateCarTypes(ctx, roleId)
+	case "delete":
+		err = h.carTypePolicy.CanDeleteCarTypes(ctx, roleId)
+	default:
+		err = fiber.NewError(fiber.StatusForbidden, "Unknown permission action")
+	}
+
+	return err
 }
 
 func (h *CarTypesRepository) GetCarType(ctx *fiber.Ctx) error {
-	context, cancel := context.WithTimeout(context.Background(), time.Duration(5*time.Second))
+	context, cancel := h.WithTimeout(5 * time.Second)
 	defer cancel()
 
 	res, err := h.repository.GetCarType(context)
@@ -32,33 +52,37 @@ func (h *CarTypesRepository) GetCarType(ctx *fiber.Ctx) error {
 }
 
 func (h *CarTypesRepository) CreateCarType(ctx *fiber.Ctx) error {
-	context, cancel := context.WithTimeout(context.Background(), time.Duration(5*time.Second))
+	context, cancel := h.WithTimeout(5 * time.Second)
 	defer cancel()
 
 	// Get role ID from context (assuming it's set by middleware)
-	roleId, ok := ctx.Locals("roleId").(uuid.UUID)
-	if !ok {
-		return h.handlerError(ctx, fiber.StatusUnauthorized, "Role ID not found in context")
+	roleId, err := h.GetRoleID(ctx)
+	if err != nil {
+		return h.handlerError(ctx, fiber.StatusUnauthorized, err.Error())
 	}
 
-	if err := h.carTypePolicy.CanCreateCarTypes(context, roleId); err != nil {
-		return h.handlerError(ctx, fiber.StatusForbidden, "You don't have permission to create cars")
+	if err := h.CheckPermission(context, roleId, "create"); err != nil {
+		return h.handlerError(ctx, fiber.StatusForbidden, "You don't have permission to create car types")
 	}
 
-	userId := ctx.Locals("userId").(uuid.UUID)
+	userId, err := h.GetUserID(ctx)
+	if err != nil {
+		return h.handlerError(ctx, fiber.StatusUnauthorized, err.Error())
+	}
 
 	formData := &models.FormCarTypes{}
 	if err := ctx.BodyParser(formData); err != nil {
 		return h.handlerError(ctx, fiber.StatusUnprocessableEntity, err.Error())
 	}
-	
-	if err := validator.New().Struct(formData); err != nil {
+
+	// Use custom validator with unique validation
+	if err := h.validatorManager.ValidateStruct(formData); err != nil {
 		carValidator := validators.NewCarTypesValidator()
 		return h.handleValidationError(ctx, err, &carValidator)
 	}
 
-	// Fixed: Call repository method and check for error
-	err := h.repository.CreateCarType(context, formData, userId)
+	// Call repository method and check for error
+	err = h.repository.CreateCarType(context, formData, userId)
 	if err != nil {
 		return h.handlerError(ctx, fiber.StatusBadRequest, err.Error())
 	}
@@ -67,25 +91,27 @@ func (h *CarTypesRepository) CreateCarType(ctx *fiber.Ctx) error {
 }
 
 func (h *CarTypesRepository) UpdateCarType(ctx *fiber.Ctx) error {
-	context, cancel := context.WithTimeout(context.Background(), time.Duration(5*time.Second)) 
+	context, cancel := h.WithTimeout(5 * time.Second)
 	defer cancel()
 
 	// Get role ID from context (assuming it's set by middleware)
-	roleId, ok := ctx.Locals("roleId").(uuid.UUID)
-	if !ok {
-		return h.handlerError(ctx, fiber.StatusUnauthorized, "Role ID not found in context")
-	}
-
-	if err := h.carTypePolicy.CanUpdateCarTypes(context, roleId); err != nil {
-		return h.handlerError(ctx, fiber.StatusForbidden, "You don't have permission to update cars")
-	}
-
-	userId := ctx.Locals("userId").(uuid.UUID)
-
-	carTypeIdParam := ctx.Params("carTypeId")
-	carTypeId, err := uuid.Parse(carTypeIdParam)
+	roleId, err := h.GetRoleID(ctx)
 	if err != nil {
-		return h.handlerError(ctx, fiber.StatusBadRequest, "Invalid car ID format")
+		return h.handlerError(ctx, fiber.StatusUnauthorized, err.Error())
+	}
+
+	if err := h.CheckPermission(context, roleId, "update"); err != nil {
+		return h.handlerError(ctx, fiber.StatusForbidden, "You don't have permission to update car types")
+	}
+
+	userId, err := h.GetUserID(ctx)
+	if err != nil {
+		return h.handlerError(ctx, fiber.StatusUnauthorized, err.Error())
+	}
+
+	carTypeId, err := h.ParseUUID(ctx.Params("carTypeId"))
+	if err != nil {
+		return h.handlerError(ctx, fiber.StatusBadRequest, "Invalid car type ID format")
 	}
 
 	updatedData := make(map[string]interface{})
@@ -94,63 +120,65 @@ func (h *CarTypesRepository) UpdateCarType(ctx *fiber.Ctx) error {
 		return h.handlerError(ctx, fiber.StatusUnprocessableEntity, err.Error())
 	}
 
-	formData := &models.FormCarTypes{}
+	formData := &models.FormUpdateCarTypes{}
 	if err := mapToStruct(updatedData, formData); err != nil {
 		return h.handlerError(ctx, fiber.StatusBadRequest, "Invalid input format")
 	}
 
-	if err := validator.New().Struct(formData); err != nil {
+	// For update validation, you might want to pass the current ID to exclude it from unique check
+	// This would require modifying the unique validator to handle update scenarios
+	if err := h.validatorManager.ValidateStruct(formData); err != nil {
 		carValidator := validators.NewCarTypesValidator()
 		return h.handleValidationError(ctx, err, &carValidator)
 	}
 
-	// Fixed: Call repository method and check for error
+	// Call repository method and check for error
 	err = h.repository.UpdateCarType(context, updatedData, carTypeId, userId)
 	if err != nil {
 		return h.handlerError(ctx, fiber.StatusBadGateway, err.Error())
 	}
 
-	return h.handlerSuccess(ctx, fiber.StatusOK, "Car update successfully!", nil)
+	return h.handlerSuccess(ctx, fiber.StatusOK, "Car type updated successfully!", nil)
 }
 
 func (h *CarTypesRepository) DeleteCarType(ctx *fiber.Ctx) error {
-	context, cancel := context.WithTimeout(context.Background(), time.Duration(5*time.Second)) 
+	context, cancel := h.WithTimeout(5 * time.Second)
 	defer cancel()
 
 	// Get role ID from context (assuming it's set by middleware)
-	roleId, ok := ctx.Locals("roleId").(uuid.UUID)
-	if !ok {
-		return h.handlerError(ctx, fiber.StatusUnauthorized, "Role ID not found in context")
-	}
-
-	if err := h.carTypePolicy.CanDeleteCarTypes(context, roleId); err != nil {
-		return h.handlerError(ctx, fiber.StatusForbidden, "You don't have permission to update cars")
-	}
-
-	carTypeIdParam := ctx.Params("carTypeId")
-	carTypeId, err := uuid.Parse(carTypeIdParam)
+	roleId, err := h.GetRoleID(ctx)
 	if err != nil {
-		return h.handlerError(ctx, fiber.StatusBadRequest, "Invalid car ID format")
+		return h.handlerError(ctx, fiber.StatusUnauthorized, err.Error())
 	}
 
-	res := h.repository.DeleteCarType(context, carTypeId)
+	if err := h.CheckPermission(context, roleId, "delete"); err != nil {
+		return h.handlerError(ctx, fiber.StatusForbidden, "You don't have permission to delete car types")
+	}
 
-	if res != nil {
+	carTypeId, err := h.ParseUUID(ctx.Params("carTypeId"))
+	if err != nil {
+		return h.handlerError(ctx, fiber.StatusBadRequest, err.Error())
+	}
+
+	err = h.repository.DeleteCarType(context, carTypeId)
+
+	if err != nil {
 		return h.handlerError(ctx, fiber.StatusBadGateway, err.Error())
 	}
 
 	return h.handlerSuccess(ctx, fiber.StatusOK, "Data successfully deleted", nil)
 }
 
-func NewCarTypesHandler(router fiber.Router, repository models.CarTypesRepository, roleRepo models.RoleRepository) {
+func NewCarTypesHandler(router fiber.Router, repository models.CarTypesRepository, roleRepo models.RoleRepository, validatorManager *validators.ValidatorManager) {
 	basePolicy := policy.NewPolicy(roleRepo)
 	carTypesPolicy := &policy.CarTypesPolicy{
 		Policy: basePolicy,
 	}
 
 	handler := &CarTypesRepository{
-		repository:    repository,
-		carTypePolicy: carTypesPolicy,
+		repository:       repository,
+		carTypePolicy:    carTypesPolicy,
+		validatorManager: validatorManager,
 	}
 
 	router.Get("/", handler.GetCarType)

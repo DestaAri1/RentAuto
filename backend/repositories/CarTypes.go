@@ -44,7 +44,7 @@ func (r *CarTypesRepository) CreateCarType(ctx context.Context, formData *models
 func (r *CarTypesRepository) UpdateCarType(ctx context.Context, updateData map[string]interface{}, carTypeId uuid.UUID, userId uuid.UUID) error {
 	tx := r.db.Begin()
 
-	if res := tx.Model(&models.CarTypes{}).Where("id = ?", carTypeId).Updates(updateData); res.Error != nil {
+	if res := tx.Model(&models.CarTypes{}).Where("id = ? AND deleted_at IS NULL", carTypeId).Updates(updateData); res.Error != nil {
 		tx.Rollback()
 		return res.Error
 	}
