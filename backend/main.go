@@ -87,6 +87,7 @@ func setupRoutes(app *fiber.App, database *gorm.DB, repos AppRepositories, servi
 	//  Admin routes
 	handlers.NewCarHandler(protected.Group("/admin/cars"), repos.cars, repos.roles)
 	handlers.NewCarTypesHandler(protected.Group("/admin/car-types"), repos.carTypes, repos.roles, validatorManager)
+	handlers.NewCarChildHandler(protected.Group("/admin/cars/children"), repos.carChild, repos.roles)
 
 	//  Common routes
 }

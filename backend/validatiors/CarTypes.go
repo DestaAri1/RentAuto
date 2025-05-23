@@ -33,7 +33,7 @@ func (v *CarTypesValidator) handleNameValidation(tag string, param string) strin
 		// Extract table.column from param for better error message
 		parts := strings.Split(param, ".")
 		if len(parts) >= 2 {
-			return fmt.Sprintf("Name already exists in %s", parts[0])
+			return fmt.Sprintf("Name already exists in database")
 		}
 		return "Name must be unique"
 	default:

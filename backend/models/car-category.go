@@ -29,8 +29,13 @@ type FormUpdateCarTypes struct {
 	Name string `json:"name" validate:"omitempty,unique=car_types.name"`
 }
 
+type CarTypeResponses struct {
+	ID        uuid.UUID      `json:"id" gorm:"type:char(36);primaryKey"`
+	Name      string         `json:"name" gorm:"not null;unique"`
+}
+
 type CarTypesRepository interface {
-	GetCarType(ctx context.Context) ([]*CarTypes, error)
+	GetCarType(ctx context.Context) ([]*CarTypeResponses, error)
 	CreateCarType(ctx context.Context, formData *FormCarTypes, userId uuid.UUID) error
 	UpdateCarType(ctx context.Context, updateData map[string]interface{}, carTypeId uuid.UUID, userId uuid.UUID) error
 	DeleteCarType(ctx context.Context, carTypeId uuid.UUID) error

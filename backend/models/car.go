@@ -51,27 +51,50 @@ type FormCarParent struct {
 }
 
 type FormCarChild struct {
+	Name      string                `json:"name" validate:"required,max=100"`
+	Alias     string                `json:"alias" validate:"required,max=100"`
+	Status    *int                  `json:"status" validate:"required,min=0,max=5"`
+	Seats     int                   `json:"seats" validate:"required,min=1,max=14"`
+	Color     string		   		`json:"color" validate:"required,max=15"`
+	Description string				`json:"description" validate:"required"`
+	CarParentId uuid.UUID			`json:"car_parent" validate:"required,uuid"`
 	Image     string                `json:"image" validate:"required"`
 	ImageFile *multipart.FileHeader `json:"-" form:"image"`
 }
 
+type CarParentResponse struct {
+	ID        uuid.UUID      `json:"id"`
+	Name      string         `json:"name"`
+	Slug      string         `json:"slug"`
+	Unit      int            `json:"unit"`
+	Available int            `json:"available"`
+	Price     float64        `json:"price"`
+	Type 	  CarTypeResponses
+	Seats     int            `json:"seats"`
+	Rating    int            `json:"rating"`
+}
+
 type CarRepository interface {
-	GetCars(ctx context.Context) ([]*CarParent, error)
+	GetCars(ctx context.Context) ([]*CarParentResponse, error)
 	CreateCar(ctx context.Context, formData *FormCarParent, userId uuid.UUID) error
 	UpdateCar(ctx context.Context, updateData map[string]interface{}, carId uuid.UUID, userId uuid.UUID) error
 	DeleteCar(ctx context.Context, carId uuid.UUID) error
 }
 
 type CarChildRepository interface {
-	GetCarChilds(ctx context.Context, carParentId uuid.UUID) ([]*CarChild, error)
+	GetCarChilds(ctx context.Context, carParentSlug string) ([]*CarChild, error)
 	GetOneCarChild(ctx context.Context, carChildId uuid.UUID) (*CarChild, error)
 	CreateCarChild(ctx context.Context, formData *FormCarChild, userId uuid.UUID) error
 	UpdateCarChild(ctx context.Context, updateData map[string]interface{}, userId uuid.UUID, carChildId uuid.UUID) error
 	DeleteCarChild(ctx context.Context, carChildId uuid.UUID) error
-
 }
 
 func (r *CarParent) BeforeCreate(tx *gorm.DB) (err error) {
+	r.ID = uuid.New()
+	return
+}
+
+func (r *CarChild) BeforeCreate(tx *gorm.DB) (err error) {
 	r.ID = uuid.New()
 	return
 }

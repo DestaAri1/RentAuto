@@ -12,10 +12,16 @@ type CarTypesRepository struct {
 	db *gorm.DB
 }
 
-func (r *CarTypesRepository) GetCarType(ctx context.Context) ([]*models.CarTypes, error) {
-	carTypes := []*models.CarTypes{}
+func (r *CarTypesRepository) GetCarType(ctx context.Context) ([]*models.CarTypeResponses, error) {
+	carTypes := []*models.CarTypeResponses{}
 
-	if res := r.db.Model(&models.CarTypes{}).Where("deleted_at IS NULL").Find(&carTypes); res.Error != nil {
+	res := r.db.
+		Table("car_types c").
+		Select("c.id, c.name").
+		Where("deleted_at IS NULL").
+		Scan(&carTypes)
+
+	if res.Error != nil {
 		return nil, res.Error
 	}
 

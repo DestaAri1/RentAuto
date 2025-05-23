@@ -6,9 +6,8 @@ import (
 	// "path/filepath"
 
 	"github.com/DestaAri1/RentAuto/models"
-	// "github.com/DestaAri1/RentAuto/utils"
+	"github.com/DestaAri1/RentAuto/utils"
 	"github.com/google/uuid"
-	"github.com/gosimple/slug"
 	"gorm.io/gorm"
 )
 
@@ -16,7 +15,7 @@ type CarRepository struct {
 	db *gorm.DB
 }
 
-func (r *CarRepository) GetCars(ctx context.Context) ([]*models.CarParent, error) {
+func (r *CarRepository) GetCars(ctx context.Context) ([]*models.CarParentResponse, error) {
 	cars := []*models.CarParent{}
 
 	res := r.db.Model(&models.CarParent{}).Where("deleted_at IS NULL").Preload("Type").Find(&cars)
@@ -24,14 +23,39 @@ func (r *CarRepository) GetCars(ctx context.Context) ([]*models.CarParent, error
 	if res.Error != nil {
 		return nil, res.Error
 	}
-	return cars, nil
+
+	// Convert ke CarParentResponse
+	var responses []*models.CarParentResponse
+	for _, car := range cars {
+		response := &models.CarParentResponse{
+			ID:        car.ID,
+			Name:      car.Name,
+			Slug:      car.Slug,
+			Unit:      car.Unit,
+			Available: car.Available,
+			Price:     car.Price,
+			Type: models.CarTypeResponses{
+				ID:   car.Type.ID,
+				Name: car.Type.Name,
+			},
+			Seats:  car.Seats,
+			Rating: car.Rating,
+		}
+		responses = append(responses, response)
+	}
+
+	return responses, nil
 }
 
-
 func (r *CarRepository) CreateCar(ctx context.Context, formData *models.FormCarParent, userId uuid.UUID) error {
+	newSlug, err := utils.GenerateUniqueSlug(r.db, "car_parents", "slug", formData.Name)
+	if err != nil {
+		return err
+	}
+	
 	cars := &models.CarParent{
 		Name: formData.Name,
-		Slug: slug.Make(formData.Name),
+		Slug: newSlug,
 		Price: formData.Price,
 		TypeId: formData.TypeId,
 		Seats: formData.Seats,
@@ -46,6 +70,10 @@ func (r *CarRepository) CreateCar(ctx context.Context, formData *models.FormCarP
 
 	if checkType.RowsAffected == 0 {
 		return errors.New("type id not found")
+	}
+
+	if checkType.Error != nil {
+		return checkType.Error
 	}
 
 	if res := tx.Create(&cars); res.Error != nil {
@@ -66,6 +94,16 @@ func (r *CarRepository) UpdateCar(ctx context.Context, updateData map[string]int
 	if tx.Error != nil {
 		return tx.Error
 	}
+
+	checkType := tx.Model(&models.CarTypes{}).Where("id = ?", updateData["type_id"]).First(&models.CarTypes{})
+
+	if checkType.RowsAffected == 0 {
+		return errors.New("type id not found")
+	}
+
+	if checkType.Error != nil {
+		return checkType.Error
+	}
 	
 	var currentCar models.CarParent
 	checkId := tx.Model(&currentCar).Where("id = ?", carId).First(&currentCar)
@@ -79,8 +117,19 @@ func (r *CarRepository) UpdateCar(ctx context.Context, updateData map[string]int
 		return err
 	}
 
+	// Only update slug if name is different from current name
 	if name, ok := updateData["name"].(string); ok && name != "" {
-		updateData["slug"] = slug.Make(name)
+		if name != currentCar.Name {
+			newSlug, err := utils.GenerateUniqueSlug(r.db, "car_parents", "slug", name)
+			if err != nil {
+				tx.Rollback()
+				return err
+			}
+			updateData["slug"] = newSlug
+		} else {
+			// Remove slug from updateData if name is the same to prevent unnecessary update
+			delete(updateData, "slug")
+		}
 	}
 
 	// if newImage, ok := updateData["image_url"].(string); ok && newImage != "" && currentCar.ImageURL != "" {
