@@ -62,6 +62,18 @@ type FormCarChild struct {
 	ImageFile *multipart.FileHeader `json:"-" form:"image"`
 }
 
+type FormUpdateCarChild struct {
+	Name      string                `json:"name" validate:"omitempty,max=100"`
+	Alias     string                `json:"alias" validate:"omitempty,max=100"`
+	Status    *int                  `json:"status" validate:"omitempty,min=0,max=5"`
+	Seats     int                   `json:"seats" validate:"omitempty,min=1,max=14"`
+	Color     string		   		`json:"color" validate:"omitempty,max=15"`
+	Description string				`json:"description" validate:"omitempty"`
+	CarParentId uuid.UUID			`json:"car_parent" validate:"omitempty,uuid"`
+	Image     string                `json:"image" validate:"omitempty"`
+	ImageFile *multipart.FileHeader `json:"-" form:"image"`
+}
+
 type CarParentResponse struct {
 	ID        uuid.UUID      `json:"id"`
 	Name      string         `json:"name"`

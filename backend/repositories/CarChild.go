@@ -3,6 +3,7 @@ package repository
 import (
 	"context"
 	"errors"
+	"fmt"
 	"path/filepath"
 
 	"github.com/DestaAri1/RentAuto/models"
@@ -108,7 +109,7 @@ func (r *CarChildRepository) CreateCarChild(ctx context.Context, formData *model
 	return nil
 }
 
-func (r *CarChildRepository) UpdateCarChild(ctx context.Context, updateData map[string]interface{}, carChildId uuid.UUID, userId uuid.UUID) error {
+func (r *CarChildRepository) UpdateCarChild(ctx context.Context, updateData map[string]interface{}, userId uuid.UUID, carChildId uuid.UUID) error {
 	if len(updateData) == 0 {
 		return errors.New("no data provided for update")
 	}
@@ -141,7 +142,8 @@ func (r *CarChildRepository) UpdateCarChild(ctx context.Context, updateData map[
 
 	// Get current car child
 	var currentCarChild models.CarChild
-	checkId := tx.Model(&currentCarChild).Where("id = ?", carChildId).First(&currentCarChild)
+	fmt.Println(carChildId)
+	checkId := tx.Model(&models.CarChild{}).Where("id = ?", carChildId).First(&currentCarChild)
 
 	if checkId.RowsAffected == 0 {
 		tx.Rollback()
@@ -190,7 +192,11 @@ func (r *CarChildRepository) UpdateCarChild(ctx context.Context, updateData map[
 		return gorm.ErrRecordNotFound
 	}
 
-	return tx.Commit().Error
+	if err := tx.Commit().Error; err != nil {
+		return err
+	}
+
+	return nil
 }
 
 func (r *CarChildRepository) DeleteCarChild(ctx context.Context, carChildId uuid.UUID) error {
