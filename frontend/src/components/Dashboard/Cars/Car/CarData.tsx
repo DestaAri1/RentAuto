@@ -5,6 +5,7 @@ import { Cars, CarsProps } from "../../../../types/index.tsx";
 import { DashBoxTitle } from "../../../DashboardComponents.tsx";
 import { Star } from "lucide-react";
 import { usePagination } from "../../../../hooks/usePagination.tsx";
+import { setLocalStorage } from "../../../../services/TokenServices.tsx";
 
 interface CarModalProps {
   onUpdate: (car: Cars) => void;
@@ -75,25 +76,40 @@ export default function CarData({ cars, onDelete }: CombinedProps) {
                             {car.rating ?? "-"} <Star size={14} />
                           </div>
                         </Td>
-                        <Td>{car.car_type.name}</Td>
+                        <Td>{car.Type.name}</Td>
                         <Td>{car.seats}</Td>
                         <Td>${car.price.toLocaleString()} / day</Td>
                         <Td>{car.unit}</Td>
-                        <Td>2</Td>
-                        <Td>1</Td>
+                        <Td>{car.available}</Td>
+                        <Td>{car.available}</Td>
                         <Td className="text-right text-sm font-medium">
                           <Link
-                            to={`/dashboard/my-rentals/edit-car/${car.slug}/${car.id}`}
-                            className="text-blue-600 hover:text-blue-900"
+                            to={`/dashboard/my-rentals/${car.slug}`}
+                            className="text-yellow-600 hover:text-yellow-900"
+                            onClick={() =>
+                              setLocalStorage(
+                                "car_parent",
+                                JSON.stringify({
+                                  title: car.name,
+                                  route: `/dashboard/my-rentals/${car.slug}`,
+                                })
+                              )
+                            }
                           >
-                            Update
+                            VIEW
+                          </Link>
+                          <Link
+                            to={`/dashboard/my-rentals/edit-car/${car.slug}/${car.id}`}
+                            className="text-blue-600 hover:text-blue-900 ml-4"
+                          >
+                            UPDATE
                           </Link>
                           <button
                             onClick={() => onDelete(car)}
                             className="text-red-600 hover:text-red-900 ml-4"
                             type="button"
                           >
-                            Delete
+                            DELETE
                           </button>
                         </Td>
                       </tr>

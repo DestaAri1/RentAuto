@@ -13,6 +13,8 @@ export const GetOneCar = async (id: string): Promise<any> => {
 
   try {
     const response = await apiClient.get(`/admin/cars/${id}`);
+    console.log(response);
+    
     return response.data;
   } catch (error) {
     console.error(`API error in GetOneCar for ID ${id}:`, error);

@@ -6,6 +6,7 @@ export const setToken = (token: string, key: string = "token"): void => {
     Cookies.set(key, token, {
       // secure: true, // Only sent over HTTPS
       sameSite: "strict", // Prevents CSRF attacks
+      expires: 1
     });
   } catch (error) {
     console.error("Failed to set token in cookie:", error);
@@ -51,3 +52,21 @@ export const getTokenUser = (key: string = "user"): any | null => {
     return null;
   }
 };
+
+export const setLocalStorage = (key: string, data: string): any | null => {
+  try {
+    localStorage.setItem(key, data)
+  } catch (error) {
+    console.error("Failed to set token in cookie:", error);
+    return null
+  }
+}
+
+export const getLocalStorage = (key: string): any => {
+  try {
+    const item = localStorage.getItem(key);
+    return item ? JSON.parse(item) : null;
+  } catch (error) {
+    console.error("Failed to get token in cookie:", error);
+  }
+}

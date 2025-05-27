@@ -10,9 +10,9 @@ export interface User {
   role: Role;
 }
 
-export interface Role{
+export interface Role {
   id: number;
-  name:string;
+  name: string;
 }
 
 // Define the context state type
@@ -45,7 +45,7 @@ export interface HomePageProps {
 export interface Cars {
   id: string;
   name: string;
-  slug: string
+  slug: string;
   price: number;
   type_id: string;
   type_name?: string; // For display purposes
@@ -53,7 +53,8 @@ export interface Cars {
   unit: number;
   rating: number;
   image_url?: string;
-  car_type : CarType
+  car_type: CarType;
+  available: number;
 }
 
 export interface CarsProps {
@@ -111,7 +112,7 @@ interface AvailableCars {
 }
 
 export interface AvailableCarsProps {
-  availableCars: AvailableCars[]
+  availableCars: AvailableCars[];
 }
 
 export interface CarType {
@@ -121,4 +122,25 @@ export interface CarType {
 
 export interface CarTypesProps {
   carTypes: CarType[];
+}
+
+export interface CarChild {
+  id: string;
+  name: string;
+  alias: string;
+  image: string;
+  slug:string
+  status: number
+  color: string
+  carParent: Cars
+  description: string
+  is_active: boolean
+  Parent: {
+    id: string;
+    name: string
+  }
+}
+
+export interface CarChildProps {
+  carChild: CarChild[]
 }

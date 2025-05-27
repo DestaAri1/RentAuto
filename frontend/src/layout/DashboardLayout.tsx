@@ -8,6 +8,7 @@ import SideNav from "../components/Navbar/Dashboard/SideNav.tsx";
 import NavBar from "../components/Navbar/Dashboard/NavBar.tsx";
 import { BreadcrumbProps } from "../types/index.tsx";
 import { Helmet } from "react-helmet-async";
+import useValidateCarParent from "../hooks/useValidateCarParent.tsx";
 
 interface DashboardLayoutProps {
   onSearch?: (keyword: string) => void;
@@ -26,6 +27,7 @@ const DashboardLayout = ({
   title,
 }: CombinedProps) => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  useValidateCarParent();
 
   return (
     <DashboardMain>

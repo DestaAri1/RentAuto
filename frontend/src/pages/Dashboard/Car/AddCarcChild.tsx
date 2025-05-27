@@ -4,7 +4,7 @@ import { useCarForm } from "../../../hooks/useCarForm.tsx";
 import useCarType from "../../../hooks/useCarType.tsx";
 import FormCar from "../../../components/Dashboard/Cars/Car/FormCar.tsx";
 
-const AddCar: FC = (): ReactElement => {
+const AddCarChild: FC = (): ReactElement => {
   const breadcrumbItems = [
     { name: "Dashboard", href: "/dashboard" },
     { name: "My Cars", href: "/dashboard/my-rentals" },
@@ -182,4 +182,4 @@ const AddCar: FC = (): ReactElement => {
   );
 };
 
-export default AddCar;
+export default AddCarChild;
