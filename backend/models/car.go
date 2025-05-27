@@ -14,7 +14,6 @@ type CarParent struct {
 	Slug      string         `json:"slug" gorm:"not null"`
 	Unit      int            `json:"unit" gorm:"not null"`
 	Available int            `json:"available" gorm:"not null"`
-	IsActive  int            `json:"is_active" gorm:"not null"`
 	Price     float64        `json:"price" gorm:"not null"`
 	TypeId    uuid.UUID      `json:"car_type_id" gorm:"not null"`
 	Type      CarTypes       `json:"car_type" gorm:"foreignKey:TypeId;references:ID;onDelete:cascade"`
@@ -31,6 +30,7 @@ type CarChild struct {
 	Alias       string         `json:"alias" gorm:"not null"`
 	Slug        string         `json:"slug" gorm:"not null"`
 	Status      *int           `json:"status" gorm:"default:0"`
+	IsActive    *bool          `json:"is_active" gorm:"default:false"`
 	ImageURL    string         `json:"image_url"`
 	Color       string         `json:"color" gorm:"not null"`
 	CarParentId uuid.UUID      `json:"car_parent_id" default:"not null"`
@@ -86,11 +86,13 @@ type CarParentResponse2 struct {
 
 type CarChildResponse struct {
 	ID          uuid.UUID `json:"id"`
-	Name        string    `json:"name" validate:"required,max=100"`
-	Alias       string    `json:"alias" validate:"required,max=100"`
-	Status      *int      `json:"status" validate:"required,min=0,max=5"`
-	Color       string    `json:"color" validate:"required,max=15"`
-	Description string    `json:"description" validate:"required"`
+	Name        string    `json:"name"`
+	Alias       string    `json:"alias"`
+	Status      *int      `json:"status"`
+	Color       string    `json:"color"`
+	Description string    `json:"description"`
+	Image		string	  `json:"image_url"`
+	IsActive	*bool	  `json:"is_active"`
 	Parent 		CarParentResponse2
 }
 

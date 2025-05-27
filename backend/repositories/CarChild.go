@@ -45,7 +45,7 @@ func (r *CarChildRepository) GetCarChilds(ctx context.Context, carParentSlug str
 		return nil, res.Error
 	}
 
-	var carChildResponse []*models.CarChildResponse
+	carChildResponse := []*models.CarChildResponse{}
 	for _, carChild := range carChild {
 		response := &models.CarChildResponse{
 			ID: carChild.ID.ID,
@@ -54,6 +54,8 @@ func (r *CarChildRepository) GetCarChilds(ctx context.Context, carParentSlug str
 			Status: carChild.Status,
 			Color: carChild.Color,
 			Description: carChild.Description,
+			Image: carChild.ImageURL,
+			IsActive: carChild.IsActive,
 			Parent: models.CarParentResponse2{
 				ID: carChild.CarParent.TypeId,
 				Name: carChild.CarParent.Name,
