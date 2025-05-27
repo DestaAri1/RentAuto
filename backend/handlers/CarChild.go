@@ -67,6 +67,33 @@ func (h *CarChildHandler) GetCarChild(ctx *fiber.Ctx) error {
 	return h.handlerSuccess(ctx, fiber.StatusOK, "", result)
 }
 
+func (h *CarChildHandler) GetOneCarChild(ctx *fiber.Ctx) error {
+	context, cancel := h.WithTimeout(5 *time.Second)
+	defer cancel()
+
+	roleId, err := h.GetRoleID(ctx)
+	if err != nil {
+		return h.handlerError(ctx, fiber.StatusUnauthorized, err.Error())
+	}
+
+	if err := h.CheckPermission(context, roleId, "getOne"); err != nil {
+		return h.handlerError(ctx, fiber.StatusForbidden, "You don't have permission to view cars")
+	}
+
+	carChildId, err := h.ParseUUID(ctx.Params("carChildId"))
+	if err != nil {
+		return h.handlerError(ctx, fiber.StatusUnprocessableEntity, err.Error())
+	}
+	
+	result, err := h.repository.GetOneCarChild(context, carChildId)
+
+	if err != nil {
+		return h.handlerError(ctx, fiber.StatusBadRequest, err.Error())
+	}
+
+	return h.handlerSuccess(ctx, fiber.StatusOK, "", result)
+}
+
 func (h *CarChildHandler) CreateCarChild(ctx *fiber.Ctx) error {
 	context, cancel := h.WithTimeout(5 * time.Second)
 	defer cancel()
@@ -161,6 +188,13 @@ func (h *CarChildHandler) UpdateCarChild(ctx *fiber.Ctx) error {
 		return h.handlerError(ctx, fiber.StatusUnprocessableEntity, err.Error())
 	}
 
+	parentId, err := h.ParseFormValue(ctx, "car_parent", "uuid")
+	if  err != nil {
+		return h.handlerError(ctx, fiber.StatusBadRequest, err.Error())
+	}
+
+	formData.CarParentId = parentId.(uuid.UUID)
+
 	// Handle file upload if provided
 	file, err := ctx.FormFile("image")
 	if err == nil {
@@ -206,9 +240,6 @@ func (h *CarChildHandler) UpdateCarChild(ctx *fiber.Ctx) error {
 	if formData.Status != nil {
 		updatedData["status"] = formData.Status
 	}
-	if formData.Seats != 0 {
-		updatedData["seats"] = formData.Seats
-	}
 	if formData.Color != "" {
 		updatedData["color"] = formData.Color
 	}
@@ -240,6 +271,32 @@ func (h *CarChildHandler) UpdateCarChild(ctx *fiber.Ctx) error {
 	return h.handlerSuccess(ctx, fiber.StatusOK, "Car Child updated successfully!", nil)
 }
 
+func (h *CarChildHandler) DeleteCar(ctx *fiber.Ctx) error {
+	context, cancel := h.WithTimeout(5 *time.Second)
+	defer cancel()
+
+	roleId, err := h.GetRoleID(ctx)
+	if err != nil {
+		return h.handlerError(ctx, fiber.StatusUnauthorized, err.Error())
+	}
+
+	if err := h.CheckPermission(context, roleId, "delete"); err != nil {
+		return h.handlerError(ctx, fiber.StatusForbidden, "You don't have permission to update car")
+	}
+
+	carChildId, err := h.ParseUUID(ctx.Params("carChildId"))
+	if err != nil {
+		return h.handlerError(ctx, fiber.StatusUnprocessableEntity, err.Error())
+	}
+
+	res := h.repository.DeleteCarChild(context, carChildId)
+	if res != nil {
+		return h.handlerError(ctx, fiber.StatusBadRequest, err.Error())
+	}
+
+	return h.handlerSuccess(ctx, fiber.StatusOK, "Success delete", "")
+}
+
 func NewCarChildHandler(router fiber.Router, repository models.CarChildRepository, roleRepo models.RoleRepository) {
 	basePolicy := policy.NewPolicy(roleRepo)
 	carPolicy := &policy.CarPolicy{
@@ -252,6 +309,8 @@ func NewCarChildHandler(router fiber.Router, repository models.CarChildRepositor
 	}
 
 	router.Get("/:carSlug", handler.GetCarChild)
+	router.Get("/view/:carChildId", handler.GetOneCarChild)
 	router.Post("/", handler.CreateCarChild)
 	router.Patch("/:carChildId", handler.UpdateCarChild)
+	router.Delete("/:carChildId", handler.DeleteCar)
 }

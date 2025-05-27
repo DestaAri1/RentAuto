@@ -3,7 +3,6 @@ package repository
 import (
 	"context"
 	"errors"
-	"fmt"
 	"path/filepath"
 
 	"github.com/DestaAri1/RentAuto/models"
@@ -16,7 +15,21 @@ type CarChildRepository struct {
 	db *gorm.DB
 }
 
-func (r *CarChildRepository) GetCarChilds(ctx context.Context, carParentSlug string) ([]*models.CarChild, error) {
+func (r *CarChildRepository) updateCarParentColumn(ctx context.Context, carParentId uuid.UUID, updates map[string]int) error {
+	tx := r.db.WithContext(ctx).Model(&models.CarParent{}).Where("id = ?", carParentId)
+
+	for column, value := range updates {
+		if value > 0 {
+			tx = tx.UpdateColumn(column, gorm.Expr(column+" + ?", value))
+		} else if value < 0 {
+			tx = tx.UpdateColumn(column, gorm.Expr(column+" - ?", -value))
+		}
+	}
+
+	return tx.Error
+}
+
+func (r *CarChildRepository) GetCarChilds(ctx context.Context, carParentSlug string) ([]*models.CarChildResponse, error) {
 	carChild := []*models.CarChild{}
 
 	var carParent models.CarParent
@@ -26,13 +39,31 @@ func (r *CarChildRepository) GetCarChilds(ctx context.Context, carParentSlug str
 		return nil, errors.New("cannot find parent")
 	}
 
-	res := r.db.Model(&models.CarChild{}).Where("car_parent_id = ? AND deleted_at IS NULL", carParent.ID).Find(&carChild)
+	res := r.db.Model(&models.CarChild{}).Where("car_parent_id = ? AND deleted_at IS NULL", carParent.ID.ID).Preload("CarParent").Find(&carChild)
 
 	if res.Error != nil {
 		return nil, res.Error
 	}
 
-	return carChild, nil
+	var carChildResponse []*models.CarChildResponse
+	for _, carChild := range carChild {
+		response := &models.CarChildResponse{
+			ID: carChild.ID.ID,
+			Name: carChild.Name,
+			Alias: carChild.Alias,
+			Status: carChild.Status,
+			Color: carChild.Color,
+			Description: carChild.Description,
+			Parent: models.CarParentResponse2{
+				ID: carChild.CarParent.TypeId,
+				Name: carChild.CarParent.Name,
+			},
+		}
+
+		carChildResponse = append(carChildResponse, response)
+	}
+
+	return carChildResponse, nil
 }
 
 func (r *CarChildRepository) GetOneCarChild(ctx context.Context, carChildId uuid.UUID) (*models.CarChild, error) {
@@ -106,6 +137,16 @@ func (r *CarChildRepository) CreateCarChild(ctx context.Context, formData *model
 		return err
 	}
 
+	// Update car parent columns after successful creation
+	updates := map[string]int{"unit": 1}
+	if formData.Status != nil && *formData.Status == 1 {
+		updates["available"] = 1
+	}
+
+	if err := r.updateCarParentColumn(ctx, formData.CarParentId, updates); err != nil {
+		return err
+	}
+
 	return nil
 }
 
@@ -124,25 +165,8 @@ func (r *CarChildRepository) UpdateCarChild(ctx context.Context, updateData map[
 		}
 	}()
 
-	// Check if carParentId exists in updateData and validate it
-	if carParentId, exists := updateData["car_parent_id"]; exists {
-		var carParent models.CarParent
-		checkCarParentId := tx.Model(&models.CarParent{}).Where("id = ? AND deleted_at IS NULL", carParentId).First(&carParent)
-
-		if checkCarParentId.RowsAffected == 0 {
-			tx.Rollback()
-			return errors.New("car parent id not found")
-		}
-
-		if checkCarParentId.Error != nil {
-			tx.Rollback()
-			return checkCarParentId.Error
-		}
-	}
-
-	// Get current car child
+	// Get current car child FIRST
 	var currentCarChild models.CarChild
-	fmt.Println(carChildId)
 	checkId := tx.Model(&models.CarChild{}).Where("id = ?", carChildId).First(&currentCarChild)
 
 	if checkId.RowsAffected == 0 {
@@ -153,6 +177,33 @@ func (r *CarChildRepository) UpdateCarChild(ctx context.Context, updateData map[
 	if checkId.Error != nil {
 		tx.Rollback()
 		return checkId.Error
+	}
+
+	// Store original values for comparison
+	originalStatus := 0
+	if currentCarChild.Status != nil {
+		originalStatus = *currentCarChild.Status
+	}
+	originalCarParentId := currentCarChild.CarParentId
+
+	// Check if carParentId exists in updateData and validate it
+	newCarParentId := originalCarParentId // Default to current parent
+	if carParentId, exists := updateData["car_parent_id"]; exists {
+		if carParentUUID, ok := carParentId.(uuid.UUID); ok {
+			var carParent models.CarParent
+			checkCarParentId := tx.Model(&models.CarParent{}).Where("id = ? AND deleted_at IS NULL", carParentUUID).First(&carParent)
+
+			if checkCarParentId.RowsAffected == 0 {
+				tx.Rollback()
+				return errors.New("car parent id not found")
+			}
+
+			if checkCarParentId.Error != nil {
+				tx.Rollback()
+				return checkCarParentId.Error
+			}
+			newCarParentId = carParentUUID
+		}
 	}
 
 	// Handle slug generation if name is being updated
@@ -196,6 +247,58 @@ func (r *CarChildRepository) UpdateCarChild(ctx context.Context, updateData map[
 		return err
 	}
 
+	// Handle car parent updates after successful update
+	newStatus := originalStatus // Default to original status
+	if statusValue, exists := updateData["status"]; exists {
+		if statusPtr, ok := statusValue.(*int); ok && statusPtr != nil {
+			newStatus = *statusPtr
+		} else if statusInt, ok := statusValue.(int); ok {
+			newStatus = statusInt
+		}
+	}
+
+	// Handle car parent changes
+	if originalCarParentId != newCarParentId {
+		// Moving to different parent
+		// Decrease from old parent
+		oldParentUpdates := map[string]int{"unit": -1}
+		if originalStatus == 1 {
+			oldParentUpdates["available"] = -1
+		}
+		if err := r.updateCarParentColumn(ctx, originalCarParentId, oldParentUpdates); err != nil {
+			return err
+		}
+
+		// Increase to new parent
+		newParentUpdates := map[string]int{"unit": 1}
+		if newStatus == 1 {
+			newParentUpdates["available"] = 1
+		}
+		if err := r.updateCarParentColumn(ctx, newCarParentId, newParentUpdates); err != nil {
+			return err
+		}
+	} else {
+		// Same parent, check status change
+		if originalStatus != newStatus {
+			updates := map[string]int{}
+			
+			// Status changed from available (1) to not available (!= 1)
+			if originalStatus == 1 && newStatus != 1 {
+				updates["available"] = -1
+			}
+			// Status changed from not available (!= 1) to available (1)
+			if originalStatus != 1 && newStatus == 1 {
+				updates["available"] = 1
+			}
+
+			if len(updates) > 0 {
+				if err := r.updateCarParentColumn(ctx, originalCarParentId, updates); err != nil {
+					return err
+				}
+			}
+		}
+	}
+
 	return nil
 }
 
@@ -203,6 +306,19 @@ func (r *CarChildRepository) DeleteCarChild(ctx context.Context, carChildId uuid
 	tx := r.db.Begin()
 	if tx.Error != nil {
 		return tx.Error
+	}
+
+	// Get car child data before deletion for parent update
+	var carChild models.CarChild
+	checkCarChild := tx.Model(&models.CarChild{}).Where("id = ?", carChildId).First(&carChild)
+	if checkCarChild.RowsAffected == 0 {
+		tx.Rollback()
+		return gorm.ErrRecordNotFound
+	}
+
+	if checkCarChild.Error != nil {
+		tx.Rollback()
+		return checkCarChild.Error
 	}
 
 	// Soft delete menggunakan gorm
@@ -217,7 +333,21 @@ func (r *CarChildRepository) DeleteCarChild(ctx context.Context, carChildId uuid
 		return gorm.ErrRecordNotFound
 	}
 	
-	return tx.Commit().Error
+	if err := tx.Commit().Error; err != nil {
+		return err
+	}
+
+	// Update car parent after successful deletion
+	updates := map[string]int{"unit": -1}
+	if carChild.Status != nil && *carChild.Status == 1 {
+		updates["available"] = -1
+	}
+
+	if err := r.updateCarParentColumn(ctx, carChild.CarParentId, updates); err != nil {
+		return err
+	}
+
+	return nil
 }
 
 func NewCarChildRepository(db *gorm.DB) models.CarChildRepository {

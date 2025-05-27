@@ -3,7 +3,6 @@ package repository
 import (
 	"context"
 	"errors"
-	// "path/filepath"
 
 	"github.com/DestaAri1/RentAuto/models"
 	"github.com/DestaAri1/RentAuto/utils"
@@ -28,7 +27,7 @@ func (r *CarRepository) GetCars(ctx context.Context) ([]*models.CarParentRespons
 	var responses []*models.CarParentResponse
 	for _, car := range cars {
 		response := &models.CarParentResponse{
-			ID:        car.ID,
+			ID:        car.ID.ID,
 			Name:      car.Name,
 			Slug:      car.Slug,
 			Unit:      car.Unit,
