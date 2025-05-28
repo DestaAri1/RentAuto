@@ -6,12 +6,12 @@ import ImageUploader from "../../../ui/ImageUploader.tsx";
 import { Car, DollarSign, Hash, Star, Type, Users } from "lucide-react";
 import { ImageItem } from "../../../../hooks/useImageUpload.tsx";
 import { UseFormRegister, FieldErrors } from "react-hook-form";
-import { CarFormData } from "../../../../hooks/useCarForm.tsx";
+import { CarFormDatas } from "../../../../hooks/Car/useCarForm.tsx";
 
 interface FormCarProps {
-  register: UseFormRegister<CarFormData>;
+  register: UseFormRegister<CarFormDatas>;
   handleSubmit: (e: React.FormEvent<HTMLFormElement>) => void;
-  errors: FieldErrors<CarFormData>;
+  errors: FieldErrors<CarFormDatas>;
   isSubmitting: boolean;
   isValid: boolean;
   isDirty: boolean;
@@ -37,7 +37,7 @@ interface FormCarProps {
     network?: string;
     validation?: string;
   };
-  watchedValues: CarFormData;
+  watchedValues: CarFormDatas;
   resetAllErrors: () => void;
 }
 

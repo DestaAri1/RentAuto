@@ -23,7 +23,7 @@ export const DeleteCarModal: React.FC<DeleteCarModalProps> = ({
   };    
   
   return (
-    <Modal isOpen={isOpen} onClose={onClose} title="Delete Car Type">
+    <Modal isOpen={isOpen} onClose={onClose} title="Delete Car">
       <div>
         <p className="text-sm text-gray-500">
           Are you sure you want to delete car "{car?.name}"? This
