@@ -156,16 +156,38 @@ func (r *CarRepository) UpdateCar(ctx context.Context, updateData map[string]int
 
 func (r *CarRepository) DeleteCar(ctx context.Context, carId uuid.UUID) error {
 	tx := r.db.Begin()
-	
-	// Soft delete menggunakan gorm
-	if res := tx.Where("id = ?", carId).Delete(&models.CarParent{}); res.Error != nil {
+	defer func() {
+		if r := recover(); r != nil {
+			tx.Rollback()
+		}
+	}()
+
+	carChild := []*models.CarChild{}
+	if err := tx.Where("car_parent_id = ?", carId).Find(&carChild).Error; err != nil {
 		tx.Rollback()
-		return res.Error
+		return err
 	}
-	
-	tx.Commit()
+
+	for _, child := range carChild {
+		if err := tx.Delete(child).Error; err != nil {
+			tx.Rollback()
+			return err
+		}
+	}
+
+	// Soft delete parent (uncomment jika ingin menghapus parent)
+	if err := tx.Where("id = ?", carId).Delete(&models.CarParent{}).Error; err != nil {
+	    tx.Rollback()
+	    return err
+	}
+
+	if err := tx.Commit().Error; err != nil {
+		return err
+	}
+
 	return nil
 }
+
 
 func NewCarRepository(db *gorm.DB) models.CarRepository {
 	return &CarRepository{
