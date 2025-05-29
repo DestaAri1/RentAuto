@@ -1,5 +1,12 @@
 import apiClient from "./BaseServices.tsx";
 
+interface CarParentFormData {
+  name: string;
+  price: number;
+  type_id: string;
+  seats: number
+}
+
 export const GetAllCars = async (): Promise<any> => {
   const response = await apiClient.get("/admin/cars");
   return response;
@@ -14,7 +21,7 @@ export const GetOneCar = async (id: string): Promise<any> => {
   try {
     const response = await apiClient.get(`/admin/cars/${id}`);
     console.log(response);
-    
+
     return response.data;
   } catch (error) {
     console.error(`API error in GetOneCar for ID ${id}:`, error);
@@ -22,11 +29,12 @@ export const GetOneCar = async (id: string): Promise<any> => {
   }
 };
 
-export const CreateCar = async (carData: FormData): Promise<any> => {
+export const CreateCar = async (carData: CarParentFormData): Promise<CarParentFormData> => {
   try {
     const response = await apiClient.post("/admin/cars", carData, {
       headers: {
-        "Content-Type": "multipart/form-data",
+        // "Content-Type": "multipart/form-data",
+        "Content-Type": "application/json",
       },
     });
     return response.data;

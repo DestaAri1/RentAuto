@@ -137,17 +137,7 @@ export const InputField: FC<InputFieldProps> = ({
           )}
           {name === "seats" && (
             <div className="mt-1 text-xs text-gray-400">
-              1-50 seats (realistic numbers preferred)
-            </div>
-          )}
-          {name === "unit" && (
-            <div className="mt-1 text-xs text-gray-400">
-              1-1000 available cars
-            </div>
-          )}
-          {name === "rating" && (
-            <div className="mt-1 text-xs text-gray-400">
-              1.0 - 5.0 stars (one decimal place)
+              1-14 seats (realistic numbers preferred)
             </div>
           )}
         </>

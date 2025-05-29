@@ -14,6 +14,7 @@ interface SelectFieldProps {
   disabled?: boolean;
   onBlur?: () => void;
   helperText?: string;
+  value?: string | number; // ✅ Tambahkan prop value untuk controlled component
 }
 
 export const SelectField: FC<SelectFieldProps> = ({
@@ -29,6 +30,7 @@ export const SelectField: FC<SelectFieldProps> = ({
   disabled = false,
   onBlur,
   helperText,
+  value, // ✅ Destructure value prop
 }): ReactElement => {
   const hasError = !!error;
   const hasData = data && data.length > 0;
@@ -60,6 +62,7 @@ export const SelectField: FC<SelectFieldProps> = ({
           {...register(name)}
           disabled={disabled || !hasData}
           onBlur={onBlur}
+          value={value || ""}
           className={`w-full outline-none bg-transparent ${
             hasError
               ? "text-red-900"
@@ -76,11 +79,11 @@ export const SelectField: FC<SelectFieldProps> = ({
               : undefined
           }
         >
-          <option value="" disabled hidden>
+          <option value="" disabled>
             {!hasData ? "Loading..." : placeholder}
           </option>
           {hasData ? (
-            data.map((item) => (
+            data?.map((item) => (
               <option key={item.id} value={item.id}>
                 {item.name}
               </option>

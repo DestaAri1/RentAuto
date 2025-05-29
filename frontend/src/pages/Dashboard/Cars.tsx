@@ -1,4 +1,4 @@
-import { useState } from "react";
+import React, { useEffect, useState } from "react";
 import DashboardLayout from "../../layout/DashboardLayout.tsx";
 import { Cars } from "../../types/index.tsx";
 import { useDebouncedSearch } from "../../hooks/useDebouncedSearch.tsx";
@@ -9,6 +9,7 @@ import useCar from "../../hooks/useCar.tsx";
 import DeleteCarModal from "../../components/Dashboard/Cars/Car/DeleteCarModal.tsx";
 import useModal from "../../hooks/useModal.tsx";
 import AddCarModal from "../../components/Dashboard/Cars/Car/AddCarModal.tsx";
+import UpdateCarModal from "../../components/Dashboard/Cars/Car/UpdateCarModal.tsx";
 import { useCarForm } from "../../hooks/useCarForm.tsx";
 
 export default function CarsIndex() {
@@ -26,28 +27,35 @@ export default function CarsIndex() {
     searchTerm,
     (car, keyword) =>
       car.name.toLowerCase().includes(keyword) ||
-      car.car_type.name.toLowerCase().includes(keyword) ||
+      car.Type.name.toLowerCase().includes(keyword) ||
       car.seats.toString().includes(keyword)
   );
 
   const createModal = useModal();
+  const updateModal = useModal();
   const deleteModal = useModal();
 
   // Form logic untuk add car
-  const {
-    register,
-    handleSubmit,
-    formState: { errors, isSubmitting, isDirty, isValid },
-    submissionErrors,
-    resetAllErrors,
-    watchedValues,
-  } = useCarForm();
+  const addCarForm = useCarForm();
+
+  // Form logic untuk update car (terpisah dari add car)
+  const updateCarForm = useCarForm();
+
+  const openUpdateModal = (car: Cars) => {
+    if (car && car.id) {
+      // ✅ Populate form dengan data yang akan di-update
+      updateCarForm.populateForm(car);
+      updateModal.openModal(car);
+    } else {
+      console.error("Cannot update: Invalid car data", car);
+    }
+  };
 
   const openDeleteModal = (car: Cars) => {
     if (car && car.id) {
       deleteModal.openModal(car);
     } else {
-      console.error("Cannot update: Invalid car type data", car);
+      console.error("Cannot delete: Invalid car data", car);
     }
   };
 
@@ -60,34 +68,30 @@ export default function CarsIndex() {
 
   // Handle create car modal close
   const handleCreateModalClose = () => {
-    resetAllErrors(); // Reset form ketika modal ditutup
+    addCarForm.resetAllErrors();
     createModal.closeModal();
   };
 
-  // Handle form submission dari modal
-  const onFormSubmit = handleSubmit(async (data) => {
-    try {
-      console.log("Form submitted from parent:", data);
+  // Handle update car modal close
+  const handleUpdateModalClose = () => {
+    updateCarForm.resetAllErrors();
+    updateModal.closeModal();
+  };
 
-      // Simulate API call
-      await new Promise((resolve) => setTimeout(resolve, 2000));
-
-      // Simulate success
-      console.log("Car created successfully!");
-
-      // Refresh car list
-      // await fetchCars();
-
-      // Close modal after success
+  // Setup success callbacks
+  useEffect(() => {
+    // Set callback untuk add car success
+    addCarForm.onSubmitSuccess(() => {
+      fetchCars();
       handleCreateModalClose();
+    });
 
-      // Show success message (optional)
-      alert("Car added successfully!");
-    } catch (error) {
-      console.error("Error in parent component:", error);
-      // Error handling sudah dilakukan di useCarForm hook
-    }
-  });
+    // Set callback untuk update car success
+    updateCarForm.onSubmitSuccess(() => {
+      fetchCars();
+      handleUpdateModalClose();
+    });
+  }, [addCarForm.onSubmitSuccess, updateCarForm.onSubmitSuccess, fetchCars]);
 
   return (
     <DashboardLayout
@@ -104,26 +108,48 @@ export default function CarsIndex() {
       onSearch={(text) => setSearchTerm(text)}
     >
       <div className="max-w-7xl mx-auto px-4 sm:px-6 md:px-8">
-        <CarData cars={filteredCars} onDelete={openDeleteModal} />
+        <CarData
+          cars={filteredCars}
+          onUpdate={openUpdateModal}
+          onDelete={openDeleteModal}
+        />
         <DashBoxes>
           <CarTypes />
         </DashBoxes>
       </div>
 
+      {/* Add Car Modal */}
       <AddCarModal
         isOpen={createModal.isOpen}
         onClose={handleCreateModalClose}
-        // Pass form props ke modal
-        register={register}
-        errors={errors}
-        isSubmitting={isSubmitting}
-        isDirty={isDirty}
-        isValid={isValid}
-        submissionErrors={submissionErrors}
-        onSubmit={onFormSubmit}
-        watchedValues={watchedValues}
+        register={addCarForm.register}
+        errors={addCarForm.formState.errors}
+        isSubmitting={addCarForm.formState.isSubmitting}
+        isDirty={addCarForm.formState.isDirty}
+        isValid={addCarForm.formState.isValid}
+        submissionErrors={addCarForm.submissionErrors}
+        onSubmit={addCarForm.handleSubmit}
+        watchedValues={addCarForm.watchedValues}
+        carTypes={[]} // Will be populated by useCarType hook inside AddCarModal
       />
 
+      {/* Update Car Modal */}
+      <UpdateCarModal
+        isOpen={updateModal.isOpen}
+        onClose={handleUpdateModalClose}
+        register={updateCarForm.register}
+        errors={updateCarForm.formState.errors}
+        isSubmitting={updateCarForm.formState.isSubmitting}
+        isDirty={updateCarForm.formState.isDirty}
+        isValid={updateCarForm.formState.isValid}
+        submissionErrors={updateCarForm.submissionErrors}
+        onSubmit={updateCarForm.handleSubmit}
+        watchedValues={updateCarForm.watchedValues}
+        carTypes={[]} // Will be populated by useCarType hook inside UpdateCarModal
+        selectedCar={updateModal.selectedItem} // ✅ Pass selected car data
+      />
+
+      {/* Delete Car Modal */}
       <DeleteCarModal
         car={deleteModal.selectedItem}
         isOpen={deleteModal.isOpen}

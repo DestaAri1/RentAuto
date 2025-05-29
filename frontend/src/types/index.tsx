@@ -53,7 +53,7 @@ export interface Cars {
   unit: number;
   rating: number;
   image_url?: string;
-  car_type: CarType;
+  Type: CarType;
   available: number;
 }
 

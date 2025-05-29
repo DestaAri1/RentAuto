@@ -1,8 +1,10 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { CarFormData, carFormSchema } from "../schema/Schema.tsx";
-import { useState } from "react";
-import { SubmissionError } from "../types/submission.tsx";
+import { useState, useCallback, useEffect } from "react";
+import { CreateCar } from "../services/CarServices.tsx";
+import { useSubmissionErrorHandler } from "./useSubmissionErrorHandler.tsx";
+import { Cars } from "../types/index.tsx";
 
 export const useCarForm = () => {
   const {
@@ -25,10 +27,35 @@ export const useCarForm = () => {
     mode: "onChange", // Validate on change for better UX
   });
 
-  const [submissionErrors, setSubmissionErrors] = useState<SubmissionError>({});
   const [isFormSubmitted, setIsFormSubmitted] = useState(false);
+  const {
+    submissionErrors,
+    handleSubmissionError,
+    resetSubmissionErrors,
+    setSubmissionErrors,
+  } = useSubmissionErrorHandler(setError);
+
+  // ✅ Tambahkan callback untuk success handling
+  const [successCallback, setSuccessCallback] = useState<(() => void) | null>(
+    null
+  );
 
   const watchedValues = watch();
+
+  // ✅ Function untuk populate form dengan data yang akan di-update
+  const populateForm = useCallback(
+    (car: Cars) => {
+      setValue("name", car.name);
+      setValue("price", car.price);
+      setValue("type_id", car.Type.id);
+      setValue("seats", car.seats);
+
+      // Clear errors when populating
+      clearErrors();
+      resetSubmissionErrors();
+    },
+    [setValue, clearErrors, resetSubmissionErrors]
+  );
 
   // Validation function yang bisa dipanggil dari luar
   const validateForm = (data: CarFormData): boolean => {
@@ -71,46 +98,46 @@ export const useCarForm = () => {
     return isValid;
   };
 
-  // Error handler yang bisa dipanggil dari parent
-  const handleSubmissionError = (error: any) => {
-    console.error("Error creating car:", error);
+  const onSubmit = async (data: CarFormData) => {
+    try {
+      // Clear previous errors
+      setSubmissionErrors({});
 
-    // Handle different types of errors
-    if (
-      error.name === "NetworkError" ||
-      error.message.includes("fetch") ||
-      error.message.includes("Network")
-    ) {
-      setSubmissionErrors({
-        network:
-          "Network error. Please check your internet connection and try again.",
-      });
-    } else if (error.response?.status === 422) {
-      // Validation errors from server
-      const serverErrors = error.response.data.errors;
-      Object.keys(serverErrors).forEach((field) => {
-        setError(field as keyof CarFormData, {
-          type: "server",
-          message: serverErrors[field][0],
-        });
-      });
-    } else if (error.response?.status === 413) {
-      setSubmissionErrors({
-        general:
-          "Upload size too large. Please reduce image file sizes and try again.",
-      });
-    } else if (error.response?.status >= 500) {
-      setSubmissionErrors({
-        general:
-          "Server error. Please try again later or contact support if the problem persists.",
-      });
-    } else {
-      setSubmissionErrors({
-        general:
-          error.message || "An unexpected error occurred. Please try again.",
-      });
+      // Validate form
+      const validated = validateForm(data);
+
+      if (!validated) {
+        return;
+      }
+
+      // Prepare data untuk API
+      const carData = {
+        name: data.name,
+        price: Number(data.price),
+        type_id: data.type_id,
+        seats: Number(data.seats),
+      };
+
+      // Call API
+      const result = await CreateCar(carData);
+
+      if (result) {
+        setIsFormSubmitted(true);
+        if (successCallback) {
+          successCallback();
+        }
+        reset();
+      }
+    } catch (error) {
+      console.error("Error in onSubmit:", error);
+      handleSubmissionError(error);
     }
   };
+
+  // ✅ Function untuk set success callback
+  const onSubmitSuccess = useCallback((callback: () => void) => {
+    setSuccessCallback(() => callback);
+  }, []);
 
   // Helper function to get error message for a field
   const getFieldError = (fieldName: keyof CarFormData) => {
@@ -130,15 +157,15 @@ export const useCarForm = () => {
   // Reset all errors
   const resetAllErrors = () => {
     clearErrors();
-    setSubmissionErrors({});
+    resetSubmissionErrors(); // Tambahan baru
     setIsFormSubmitted(false);
-    reset(); // Also reset form values
+    reset(); // Reset form values
   };
 
   return {
     // Form state and methods
     register,
-    handleSubmit, // Raw handleSubmit dari react-hook-form
+    handleSubmit: handleSubmit(onSubmit),
     formState: {
       errors,
       isSubmitting,
@@ -158,9 +185,10 @@ export const useCarForm = () => {
     resetAllErrors,
     submissionErrors,
 
-    // New utility functions
     validateForm,
     handleSubmissionError,
+    onSubmitSuccess,
+    populateForm,
 
     // Helper methods
     isFormValid: isValid,

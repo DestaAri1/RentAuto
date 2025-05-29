@@ -14,7 +14,7 @@ interface CarModalProps {
 
 type CombinedProps = CarsProps & CarModalProps;
 
-export default function CarData({ cars, onDelete }: CombinedProps) {
+export default function CarData({ cars, onUpdate, onDelete }: CombinedProps) {
   const itemsPerPage = 5;
 
   // Menggunakan generics untuk tipe car
@@ -98,12 +98,13 @@ export default function CarData({ cars, onDelete }: CombinedProps) {
                           >
                             VIEW
                           </Link>
-                          <Link
-                            to={`/dashboard/my-rentals/edit-car/${car.slug}/${car.id}`}
+                          <button
+                            onClick={() => onUpdate(car)}
                             className="text-blue-600 hover:text-blue-900 ml-4"
+                            type="button"
                           >
                             UPDATE
-                          </Link>
+                          </button>
                           <button
                             onClick={() => onDelete(car)}
                             className="text-red-600 hover:text-red-900 ml-4"
