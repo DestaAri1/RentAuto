@@ -1,5 +1,12 @@
-import React, { FC, ReactElement, ReactNode } from "react";
-import { FieldError } from "react-hook-form";
+import React, {
+  FC,
+  ReactElement,
+  ReactNode,
+  useState,
+  useRef,
+  useEffect,
+} from "react";
+import { FieldError, UseFormRegister } from "react-hook-form";
 
 interface SelectFieldProps {
   data: any[];
@@ -10,11 +17,12 @@ interface SelectFieldProps {
   required?: boolean;
   className?: string;
   error?: FieldError;
-  register: any;
+  register: UseFormRegister<any>;
   disabled?: boolean;
   onBlur?: () => void;
   helperText?: string;
-  value?: string | number; // ✅ Tambahkan prop value untuk controlled component
+  value?: string | number;
+  onChange?: (value: string | number) => void;
 }
 
 export const SelectField: FC<SelectFieldProps> = ({
@@ -30,13 +38,93 @@ export const SelectField: FC<SelectFieldProps> = ({
   disabled = false,
   onBlur,
   helperText,
-  value, // ✅ Destructure value prop
+  value,
+  onChange,
 }): ReactElement => {
+  const [isOpen, setIsOpen] = useState(false);
+  const [searchTerm, setSearchTerm] = useState("");
+  const dropdownRef = useRef<HTMLDivElement>(null);
+  const inputRef = useRef<HTMLInputElement>(null);
+
   const hasError = !!error;
   const hasData = data && data.length > 0;
 
+  // Use value prop if provided, otherwise use empty string
+  const selectedValue = value || "";
+
+  // Filter data berdasarkan search term
+  const filteredData = hasData
+    ? data.filter((item) =>
+        item.name.toLowerCase().includes(searchTerm.toLowerCase())
+      )
+    : [];
+
+  // Get selected item untuk display
+  const selectedItem = hasData
+    ? data.find((item) => item.id.toString() === selectedValue.toString())
+    : null;
+
+  // Close dropdown when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (
+        dropdownRef.current &&
+        !dropdownRef.current.contains(event.target as Node)
+      ) {
+        setIsOpen(false);
+        setSearchTerm("");
+      }
+    };
+
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
+  // Handle selection
+  const handleSelect = (item: any) => {
+    setIsOpen(false);
+    setSearchTerm("");
+
+    // Trigger onChange if provided
+    if (onChange) {
+      onChange(item.id);
+    }
+
+    // Trigger react-hook-form onChange
+    const event = {
+      target: {
+        name,
+        value: item.id,
+      },
+    };
+    register(name).onChange(event);
+
+    if (onBlur) {
+      onBlur();
+    }
+  };
+
+  // Handle input click
+  const handleInputClick = () => {
+    if (!disabled && hasData) {
+      setIsOpen(!isOpen);
+    }
+  };
+
+  // Handle search
+  const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setSearchTerm(e.target.value);
+    if (!isOpen) setIsOpen(true);
+  };
+
+  // Get register props
+  const registerProps = register(name, { required });
+
   return (
-    <div className={`relative ${className}`}>
+    <div className={`relative ${className}`} ref={dropdownRef}>
+      {/* Hidden input for react-hook-form */}
+      <input {...registerProps} type="hidden" value={selectedValue} />
+
       <label
         className={`block font-medium mb-2 ${
           hasError ? "text-red-700" : "text-gray-700"
@@ -47,54 +135,122 @@ export const SelectField: FC<SelectFieldProps> = ({
       </label>
 
       <div
-        className={`flex items-center border-2 rounded-xl px-4 py-3 transition-all duration-200 ${
+        className={`flex items-center border-2 rounded-xl px-4 py-3 transition-all duration-200 cursor-pointer ${
           hasError
             ? "border-red-500 bg-red-50 focus-within:border-red-600"
             : disabled
-            ? "border-gray-200 bg-gray-50"
-            : "border-gray-300 focus-within:border-indigo-500 focus-within:bg-white"
+            ? "border-gray-200 bg-gray-50 cursor-not-allowed"
+            : isOpen
+            ? "border-indigo-500 bg-white shadow-lg"
+            : "border-gray-300 hover:border-gray-400 focus-within:border-indigo-500 focus-within:bg-white"
         }`}
+        onClick={handleInputClick}
       >
         <div className={`mr-3 ${hasError ? "text-red-500" : "text-gray-500"}`}>
           {icon}
         </div>
-        <select
-          {...register(name)}
-          disabled={disabled || !hasData}
-          onBlur={onBlur}
-          value={value || ""}
-          className={`w-full outline-none bg-transparent ${
-            hasError
-              ? "text-red-900"
-              : disabled || !hasData
-              ? "text-gray-500"
-              : "text-gray-800"
-          }`}
-          aria-invalid={hasError}
-          aria-describedby={
-            hasError
-              ? `${name}-error`
-              : helperText
-              ? `${name}-helper`
-              : undefined
-          }
-        >
-          <option value="" disabled>
-            {!hasData ? "Loading..." : placeholder}
-          </option>
-          {hasData ? (
-            data?.map((item) => (
-              <option key={item.id} value={item.id}>
-                {item.name}
-              </option>
-            ))
+
+        <div className="flex-1">
+          {isOpen && hasData ? (
+            <input
+              ref={inputRef}
+              type="text"
+              value={searchTerm}
+              onChange={handleSearchChange}
+              placeholder="Search..."
+              className="w-full outline-none bg-transparent text-gray-800"
+              autoFocus
+            />
           ) : (
-            <option value="" disabled>
-              No data available
-            </option>
+            <div
+              className={`${
+                hasError
+                  ? "text-red-900"
+                  : disabled || !hasData
+                  ? "text-gray-500"
+                  : selectedItem
+                  ? "text-gray-800"
+                  : "text-gray-500"
+              }`}
+            >
+              {!hasData
+                ? "Loading..."
+                : selectedItem
+                ? selectedItem.name
+                : placeholder}
+            </div>
           )}
-        </select>
+        </div>
+
+        <div
+          className={`ml-2 transition-transform duration-200 ${
+            isOpen ? "rotate-180" : ""
+          }`}
+        >
+          <svg
+            className="w-5 h-5 text-gray-400"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth={2}
+              d="M19 9l-7 7-7-7"
+            />
+          </svg>
+        </div>
       </div>
+
+      {/* Custom Dropdown */}
+      {isOpen && hasData && (
+        <div className="absolute z-50 w-full mt-1 bg-white border border-gray-200 rounded-xl shadow-lg max-h-60 overflow-hidden">
+          <div className="max-h-60 overflow-y-auto">
+            {filteredData.length > 0 ? (
+              filteredData.map((item, index) => (
+                <div
+                  key={item.id}
+                  onClick={() => handleSelect(item)}
+                  className={`px-4 py-3 cursor-pointer transition-colors duration-150 flex items-center ${
+                    selectedValue.toString() === item.id.toString()
+                      ? "bg-indigo-50 text-indigo-700 border-r-2 border-indigo-500"
+                      : "hover:bg-gray-50 text-gray-800"
+                  } ${index === 0 ? "rounded-t-xl" : ""} ${
+                    index === filteredData.length - 1 ? "rounded-b-xl" : ""
+                  }`}
+                >
+                  <div className="flex-1">
+                    <div className="font-medium">{item.name}</div>
+                    {item.description && (
+                      <div className="text-sm text-gray-500">
+                        {item.description}
+                      </div>
+                    )}
+                  </div>
+                  {selectedValue.toString() === item.id.toString() && (
+                    <svg
+                      className="w-5 h-5 text-indigo-500"
+                      fill="currentColor"
+                      viewBox="0 0 20 20"
+                    >
+                      <path
+                        fillRule="evenodd"
+                        d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
+                        clipRule="evenodd"
+                      />
+                    </svg>
+                  )}
+                </div>
+              ))
+            ) : (
+              <div className="px-4 py-3 text-gray-500 text-center">
+                No results found for "{searchTerm}"
+              </div>
+            )}
+          </div>
+        </div>
+      )}
 
       {/* Error message */}
       {hasError && (
@@ -111,7 +267,7 @@ export const SelectField: FC<SelectFieldProps> = ({
             />
           </svg>
           <span className="text-sm text-red-600 font-medium">
-            {error.message}
+            {error?.message}
           </span>
         </div>
       )}
@@ -145,7 +301,7 @@ export const SelectField: FC<SelectFieldProps> = ({
               d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
             ></path>
           </svg>
-          Loading car types...
+          Loading data...
         </div>
       )}
     </div>

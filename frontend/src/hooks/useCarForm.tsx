@@ -1,7 +1,7 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { CarFormData, carFormSchema } from "../schema/Schema.tsx";
-import { useState, useCallback, useEffect } from "react";
+import { useState, useCallback } from "react";
 import { CreateCar } from "../services/CarServices.tsx";
 import { useSubmissionErrorHandler } from "./useSubmissionErrorHandler.tsx";
 import { Cars } from "../types/index.tsx";

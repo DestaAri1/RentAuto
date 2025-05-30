@@ -146,10 +146,10 @@ export const CarForm: React.FC<CarFormProps> = ({
           icon={<Type className="w-5 h-5" />}
           label="Car Type"
           name="type_id"
-          placeholder="Choose your car type"
+          placeholder="Choose one"
           register={register}
           error={errors.type_id}
-          value={watchedValues.type_id} // ✅ Pass watched value to SelectField
+          value={watchedValues.type_id}
           required
         />
         <InputField

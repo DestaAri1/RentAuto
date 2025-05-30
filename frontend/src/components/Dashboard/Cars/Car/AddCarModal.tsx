@@ -19,7 +19,7 @@ export interface CarModalProps {
   submissionErrors: SubmissionError;
   onSubmit: (e?: React.BaseSyntheticEvent) => Promise<void>;
   watchedValues: CarFormData;
-  carTypes: CarType[];
+  carTypes: CarType[]; // This will be ignored in favor of useCarType hook
 }
 
 export const AddCarModal: React.FC<CarModalProps> = ({
@@ -33,6 +33,7 @@ export const AddCarModal: React.FC<CarModalProps> = ({
   submissionErrors,
   onSubmit,
   watchedValues,
+  // carTypes prop is ignored - we use hook instead
 }) => {
   const { carTypes } = useCarType();
 
@@ -48,7 +49,7 @@ export const AddCarModal: React.FC<CarModalProps> = ({
         submissionErrors={submissionErrors}
         onSubmit={onSubmit}
         watchedValues={watchedValues}
-        carTypes={carTypes}
+        carTypes={carTypes || []} // Provide fallback empty array
         mode="add"
       />
     </Modal>
