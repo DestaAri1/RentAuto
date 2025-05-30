@@ -15,7 +15,7 @@ export interface CarFormProps {
   isDirty: boolean;
   isValid: boolean;
   submissionErrors: SubmissionError;
-  onSubmit: (e?: React.BaseSyntheticEvent) => Promise<void>;
+  onSubmit: () => void; // ✅ Changed to simple function
   watchedValues: CarFormData;
   carTypes: CarType[];
   // New props for flexibility
@@ -47,8 +47,14 @@ export const CarForm: React.FC<CarFormProps> = ({
   const finalSubmitText = submitButtonText || defaultSubmitText;
   const finalSubmittingText = submittingText || defaultSubmittingText;
 
+  // ✅ Handle form submission with simple function call
+  const handleFormSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    onSubmit();
+  };
+
   return (
-    <form onSubmit={onSubmit} className="space-y-8">
+    <form onSubmit={handleFormSubmit} className="space-y-8">
       {/* Display general submission errors */}
       {submissionErrors.general && (
         <div className="bg-red-50 border border-red-200 rounded-lg p-4">

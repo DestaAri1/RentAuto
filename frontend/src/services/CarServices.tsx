@@ -4,7 +4,7 @@ interface CarParentFormData {
   name: string;
   price: number;
   type_id: string;
-  seats: number
+  seats: number;
 }
 
 export const GetAllCars = async (): Promise<any> => {
@@ -29,7 +29,9 @@ export const GetOneCar = async (id: string): Promise<any> => {
   }
 };
 
-export const CreateCar = async (carData: CarParentFormData): Promise<CarParentFormData> => {
+export const CreateCar = async (
+  carData: CarParentFormData
+): Promise<CarParentFormData> => {
   try {
     const response = await apiClient.post("/admin/cars", carData, {
       headers: {
@@ -46,11 +48,11 @@ export const CreateCar = async (carData: CarParentFormData): Promise<CarParentFo
 
 export const UpdateCar = async (
   id: string,
-  payload: FormData // Using FormData to handle file uploads
-): Promise<any> => {
-  const response = await apiClient.put(`/admin/cars/${id}`, payload, {
+  payload: CarParentFormData // Using FormData to handle file uploads
+): Promise<CarParentFormData> => {
+  const response = await apiClient.patch(`/admin/cars/${id}`, payload, {
     headers: {
-      "Content-Type": "multipart/form-data", // Set content type for file uploads
+      "Content-Type": "application/json",
     },
   });
   return response.data;

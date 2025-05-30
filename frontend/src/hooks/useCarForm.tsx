@@ -2,7 +2,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { CarFormData, carFormSchema } from "../schema/Schema.tsx";
 import { useState, useCallback } from "react";
-import { CreateCar } from "../services/CarServices.tsx";
+import { CreateCar, UpdateCar } from "../services/CarServices.tsx";
 import { useSubmissionErrorHandler } from "./useSubmissionErrorHandler.tsx";
 import { Cars } from "../types/index.tsx";
 
@@ -98,6 +98,7 @@ export const useCarForm = () => {
     return isValid;
   };
 
+  // ✅ CREATE function - untuk menambah data baru
   const onSubmit = async (data: CarFormData) => {
     try {
       // Clear previous errors
@@ -118,10 +119,11 @@ export const useCarForm = () => {
         seats: Number(data.seats),
       };
 
-      // Call API
+      // Call CREATE API
       const result = await CreateCar(carData);
 
       if (result) {
+        console.log("🟦 CREATE: Success!");
         setIsFormSubmitted(true);
         if (successCallback) {
           successCallback();
@@ -129,10 +131,58 @@ export const useCarForm = () => {
         reset();
       }
     } catch (error) {
-      console.error("Error in onSubmit:", error);
+      console.error("🔴 Error in CREATE onSubmit:", error);
       handleSubmissionError(error);
     }
   };
+
+  // ✅ UPDATE function - untuk mengupdate data yang sudah ada
+  const onUpdate = async (data: CarFormData, id: string) => {
+    try {
+      // Clear previous errors
+      setSubmissionErrors({});
+
+      // Validate form
+      const validated = validateForm(data);
+
+      if (!validated) {
+        return;
+      }
+
+      // Prepare data untuk API
+      const carData = {
+        name: data.name,
+        price: Number(data.price),
+        type_id: data.type_id,
+        seats: Number(data.seats),
+      };
+
+      // Call UPDATE API
+      const result = await UpdateCar(id, carData);
+
+      if (result) {
+        console.log("🟨 UPDATE: Success!");
+        setIsFormSubmitted(true);
+        if (successCallback) {
+          successCallback();
+        }
+        reset();
+      }
+    } catch (error) {
+      console.error("🔴 Error in UPDATE onUpdate:", error);
+      handleSubmissionError(error);
+    }
+  };
+
+  // ✅ Create a wrapper for update that includes the ID
+  const createUpdateHandler = useCallback(
+    (id: string) => {
+      return handleSubmit((data: CarFormData) => {
+        return onUpdate(data, id);
+      });
+    },
+    [handleSubmit]
+  )
 
   // ✅ Function untuk set success callback
   const onSubmitSuccess = useCallback((callback: () => void) => {
@@ -157,7 +207,7 @@ export const useCarForm = () => {
   // Reset all errors
   const resetAllErrors = () => {
     clearErrors();
-    resetSubmissionErrors(); // Tambahan baru
+    resetSubmissionErrors();
     setIsFormSubmitted(false);
     reset(); // Reset form values
   };
@@ -165,7 +215,9 @@ export const useCarForm = () => {
   return {
     // Form state and methods
     register,
-    handleSubmit: handleSubmit(onSubmit),
+    handleSubmit: handleSubmit(onSubmit), // ✅ Untuk CREATE
+    onSubmit,
+    createUpdateHandler, // ✅ Untuk UPDATE
     formState: {
       errors,
       isSubmitting,
@@ -189,6 +241,7 @@ export const useCarForm = () => {
     handleSubmissionError,
     onSubmitSuccess,
     populateForm,
+    onUpdate,
 
     // Helper methods
     isFormValid: isValid,

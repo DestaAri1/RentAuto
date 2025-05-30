@@ -17,7 +17,7 @@ export interface CarModalProps {
   isDirty: boolean;
   isValid: boolean;
   submissionErrors: SubmissionError;
-  onSubmit: (e?: React.BaseSyntheticEvent) => Promise<void>;
+  onSubmit: () => Promise<void>;
   watchedValues: CarFormData;
   carTypes: CarType[]; // This will be ignored in favor of useCarType hook
 }

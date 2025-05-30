@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 
 interface UsePaginationProps {
   totalItems: number;
@@ -22,40 +22,43 @@ export const usePagination = <T,>({
   itemsPerPage,
   initialPage = 1,
 }: UsePaginationProps): UsePaginationReturn<T> => {
-  const [currentPage, setCurrentPage] = useState(initialPage);
+  const totalPages = useMemo(() => {
+    if (totalItems === 0) return 0;
+    return Math.ceil(totalItems / itemsPerPage);
+  }, [totalItems, itemsPerPage]);
 
-  // Calculate total pages only when totalItems or itemsPerPage changes
-  const totalPages = useMemo(
-    () => Math.max(1, Math.ceil(totalItems / itemsPerPage)),
-    [totalItems, itemsPerPage]
+  const [currentPage, setCurrentPage] = useState(
+    totalPages === 0 ? 0 : Math.min(initialPage, totalPages)
   );
 
-  // Make sure currentPage is always valid
-  useMemo(() => {
-    if (currentPage > totalPages) {
+  // Perbaiki currentPage jika totalPages berubah
+  useEffect(() => {
+    if (totalPages === 0) {
+      setCurrentPage(0);
+    } else if (currentPage > totalPages) {
       setCurrentPage(totalPages);
+    } else if (currentPage < 1) {
+      setCurrentPage(1);
     }
   }, [currentPage, totalPages]);
 
-  // Function to get paginated items
   const paginatedItems = (items: T[]): T[] => {
+    if (totalPages === 0 || currentPage === 0) return [];
     const startIndex = (currentPage - 1) * itemsPerPage;
-    const endIndex = Math.min(startIndex + itemsPerPage, items.length);
-    return items.slice(startIndex, endIndex);
+    return items.slice(startIndex, startIndex + itemsPerPage);
   };
 
-  // Navigation functions
   const goToNextPage = () => {
-    setCurrentPage((prev) => Math.min(prev + 1, totalPages));
+    if (currentPage < totalPages) setCurrentPage(currentPage + 1);
   };
 
   const goToPreviousPage = () => {
-    setCurrentPage((prev) => Math.max(prev - 1, 1));
+    if (currentPage > 1) setCurrentPage(currentPage - 1);
   };
 
   const goToPage = (page: number) => {
-    const pageNumber = Math.max(1, Math.min(page, totalPages));
-    setCurrentPage(pageNumber);
+    const newPage = Math.max(1, Math.min(page, totalPages));
+    setCurrentPage(newPage);
   };
 
   return {
@@ -65,8 +68,8 @@ export const usePagination = <T,>({
     goToNextPage,
     goToPreviousPage,
     goToPage,
-    isFirstPage: currentPage === 1,
-    isLastPage: currentPage === totalPages,
+    isFirstPage: currentPage <= 1,
+    isLastPage: currentPage === totalPages || totalPages === 0,
   };
 };
 

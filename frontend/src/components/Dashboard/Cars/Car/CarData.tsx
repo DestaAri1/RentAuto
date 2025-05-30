@@ -27,7 +27,7 @@ export default function CarData({ cars, onUpdate, onDelete }: CombinedProps) {
     isFirstPage,
     isLastPage,
   } = usePagination<any>({
-    totalItems: cars.length,
+    totalItems: cars?.length ?? 0,
     itemsPerPage,
   });
 
@@ -64,7 +64,7 @@ export default function CarData({ cars, onUpdate, onDelete }: CombinedProps) {
                   </tr>
                 </TableHead>
                 <TableBody>
-                  {cars.length > 0 ? (
+                  {cars && cars.length > 0 ? (
                     currentCars.map((car, index) => (
                       <tr key={car.id}>
                         <Td className="font-medium text-gray-900">
@@ -132,27 +132,29 @@ export default function CarData({ cars, onUpdate, onDelete }: CombinedProps) {
                   </tr>
                 </tfoot>
               </Table>
-              <div className="flex justify-center mt-4 space-x-2">
-                <button
-                  onClick={goToPreviousPage}
-                  disabled={isFirstPage}
-                  className="px-3 py-1 bg-gray-200 rounded disabled:opacity-50"
-                >
-                  Previous
-                </button>
+              {cars && cars.length > 0 && (
+                <div className="flex justify-center mt-4 space-x-2">
+                  <button
+                    onClick={goToPreviousPage}
+                    disabled={isFirstPage}
+                    className="px-3 py-1 bg-gray-200 rounded disabled:opacity-50"
+                  >
+                    Previous
+                  </button>
 
-                <span className="px-3 py-1 text-gray-700">
-                  Page {currentPage} of {totalPages}
-                </span>
+                  <span className="px-3 py-1 text-gray-700">
+                    Page {currentPage} of {totalPages}
+                  </span>
 
-                <button
-                  onClick={goToNextPage}
-                  disabled={isLastPage}
-                  className="px-3 py-1 bg-gray-200 rounded disabled:opacity-50"
-                >
-                  Next
-                </button>
-              </div>
+                  <button
+                    onClick={goToNextPage}
+                    disabled={isLastPage}
+                    className="px-3 py-1 bg-gray-200 rounded disabled:opacity-50"
+                  >
+                    Next
+                  </button>
+                </div>
+              )}
             </div>
           </div>
         </div>

@@ -1,8 +1,8 @@
 import React, { FC, ReactElement } from "react";
 import DashboardLayout from "../../../layout/DashboardLayout.tsx";
-import { useCarForm } from "../../../hooks/useCarForm.tsx";
 import useCarType from "../../../hooks/useCarType.tsx";
 import FormCar from "../../../components/Dashboard/Cars/Car/FormCar.tsx";
+import { useCarForms } from "../../../hooks/Car/useCarForm.tsx";
 
 const AddCarChild: FC = (): ReactElement => {
   const breadcrumbItems = [
@@ -29,7 +29,7 @@ const AddCarChild: FC = (): ReactElement => {
     watchedValues,
     resetAllErrors,
     isFormValid,
-  } = useCarForm();
+  } = useCarForms();
 
   const { carTypes, isLoading: carTypesLoading } = useCarType();
 
@@ -64,9 +64,6 @@ const AddCarChild: FC = (): ReactElement => {
       return `[Unable to stringify: ${error.message}]`;
     }
   };
-
-  console.log(process.env.NODE_ENV);
-  
 
   return (
     <DashboardLayout title="Create Car" breadcrumb={breadcrumbItems}>

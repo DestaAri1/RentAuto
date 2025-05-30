@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import DashboardLayout from "../../layout/DashboardLayout.tsx";
 import { Cars } from "../../types/index.tsx";
 import { useDebouncedSearch } from "../../hooks/useDebouncedSearch.tsx";
@@ -35,15 +35,11 @@ export default function CarsIndex() {
   const updateModal = useModal();
   const deleteModal = useModal();
 
-  // Form logic untuk add car
   const addCarForm = useCarForm();
-
-  // Form logic untuk update car (terpisah dari add car)
   const updateCarForm = useCarForm();
 
   const openUpdateModal = (car: Cars) => {
     if (car && car.id) {
-      // ✅ Populate form dengan data yang akan di-update
       updateCarForm.populateForm(car);
       updateModal.openModal(car);
     } else {
@@ -78,20 +74,37 @@ export default function CarsIndex() {
     updateModal.closeModal();
   };
 
-  // Setup success callbacks
-  useEffect(() => {
-    // Set callback untuk add car success
-    addCarForm.onSubmitSuccess(() => {
-      fetchCars();
-      handleCreateModalClose();
-    });
+  const handleCreateCarSubmit = async () => {
+    const formData = addCarForm.watchedValues;
 
-    // Set callback untuk update car success
+    try {
+      // Call onSubmit dari useCarForm
+      await addCarForm.onSubmit(formData);
+      await fetchCars()
+    } catch (error) {
+      console.error("❌ Error in handleCreateCarSubmit:", error);
+    }
+  };
+
+  const handleUpdateCarSubmit = async () => {
+    const formData = updateCarForm.watchedValues;
+    const carId = updateModal.selectedItem?.id;
+
+    try {
+      // Call onUpdate dari useCarForm
+      await updateCarForm.onUpdate(formData, carId);
+      await fetchCars()
+    } catch (error) {
+      console.error("❌ Error in handleUpdateCarSubmit:", error);
+    }
+  };
+
+  useEffect(() => {
     updateCarForm.onSubmitSuccess(() => {
       fetchCars();
       handleUpdateModalClose();
     });
-  }, [addCarForm.onSubmitSuccess, updateCarForm.onSubmitSuccess, fetchCars]);
+  }, [updateCarForm.onSubmitSuccess, fetchCars]);
 
   return (
     <DashboardLayout
@@ -128,26 +141,28 @@ export default function CarsIndex() {
         isDirty={addCarForm.formState.isDirty}
         isValid={addCarForm.formState.isValid}
         submissionErrors={addCarForm.submissionErrors}
-        onSubmit={addCarForm.handleSubmit}
+        onSubmit={handleCreateCarSubmit}
         watchedValues={addCarForm.watchedValues}
-        carTypes={[]} // Will be populated by useCarType hook inside AddCarModal
+        carTypes={[]}
       />
 
       {/* Update Car Modal */}
-      <UpdateCarModal
-        isOpen={updateModal.isOpen}
-        onClose={handleUpdateModalClose}
-        register={updateCarForm.register}
-        errors={updateCarForm.formState.errors}
-        isSubmitting={updateCarForm.formState.isSubmitting}
-        isDirty={updateCarForm.formState.isDirty}
-        isValid={updateCarForm.formState.isValid}
-        submissionErrors={updateCarForm.submissionErrors}
-        onSubmit={updateCarForm.handleSubmit}
-        watchedValues={updateCarForm.watchedValues}
-        carTypes={[]} // Will be populated by useCarType hook inside UpdateCarModal
-        selectedCar={updateModal.selectedItem} // ✅ Pass selected car data
-      />
+      {updateModal.isOpen && (
+        <UpdateCarModal
+          isOpen={updateModal.isOpen}
+          onClose={handleUpdateModalClose}
+          register={updateCarForm.register}
+          errors={updateCarForm.formState.errors}
+          isSubmitting={updateCarForm.formState.isSubmitting}
+          isDirty={updateCarForm.formState.isDirty}
+          isValid={updateCarForm.formState.isValid}
+          submissionErrors={updateCarForm.submissionErrors}
+          onSubmit={handleUpdateCarSubmit}
+          watchedValues={updateCarForm.watchedValues}
+          carTypes={[]}
+          selectedCar={updateModal.selectedItem}
+        />
+      )}
 
       {/* Delete Car Modal */}
       <DeleteCarModal
