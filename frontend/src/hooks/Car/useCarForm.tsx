@@ -2,8 +2,9 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { useState } from "react";
-import { useImageUpload } from "../useImageUpload";
-import { CreateCar } from "../../services/CarServices";
+import { useImageUpload } from "../useImageUpload.tsx";
+import { CreateCar } from "../../services/CarServices.tsx";
+import { ImageError, SubmissionError } from "../../types/submission.tsx";
 
 // Validation schema with complex error messages
 const carFormSchema = z.object({
@@ -92,16 +93,7 @@ const carFormSchema = z.object({
 export type CarFormDatas = z.infer<typeof carFormSchema>;
 
 // Custom error types for better error handling
-interface ImageError {
-  mainImage?: string;
-  additionalImages?: string;
-}
 
-interface SubmissionError {
-  general?: string;
-  network?: string;
-  validation?: string;
-}
 
 export const useCarForms = () => {
   // React Hook Form setup with validation

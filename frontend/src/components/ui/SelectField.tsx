@@ -1,26 +1,14 @@
 import React, {
   FC,
   ReactElement,
-  ReactNode,
   useState,
   useRef,
   useEffect,
 } from "react";
-import { FieldError, UseFormRegister } from "react-hook-form";
+import { BaseInputField } from "../../types/form";
 
-interface SelectFieldProps {
+interface SelectFieldProps extends BaseInputField{
   data: any[];
-  label: string;
-  name: string;
-  placeholder: string;
-  icon: ReactNode;
-  required?: boolean;
-  className?: string;
-  error?: FieldError;
-  register: UseFormRegister<any>;
-  disabled?: boolean;
-  onBlur?: () => void;
-  helperText?: string;
   value?: string | number;
   onChange?: (value: string | number) => void;
 }

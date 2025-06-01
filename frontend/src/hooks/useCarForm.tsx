@@ -123,7 +123,6 @@ export const useCarForm = () => {
       const result = await CreateCar(carData);
 
       if (result) {
-        console.log("🟦 CREATE: Success!");
         setIsFormSubmitted(true);
         if (successCallback) {
           successCallback();
@@ -161,7 +160,6 @@ export const useCarForm = () => {
       const result = await UpdateCar(id, carData);
 
       if (result) {
-        console.log("🟨 UPDATE: Success!");
         setIsFormSubmitted(true);
         if (successCallback) {
           successCallback();

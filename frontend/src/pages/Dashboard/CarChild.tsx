@@ -1,15 +1,48 @@
 import DashboardLayout from "../../layout/DashboardLayout.tsx";
 import CarChildList from "../../components/Dashboard/Cars/CarChild/CarChildList.tsx";
-import { getLocalStorage } from "../../services/TokenServices.tsx";
 import { Link } from "react-router-dom";
+import {
+  CarParentProvider,
+  useCarParent,
+} from "../../context/CarParentContext.tsx";
+import { useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 
-export default function CarChild() {
-  const parent = getLocalStorage("car_parent");
+// ✅ Komponen terpisah yang menggunakan context
+function CarChildContent() {
+  const { parent, isLoading } = useCarParent();
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    // ✅ Tunggu loading selesai baru redirect
+    if (!isLoading && !parent) {
+      console.log("No parent data found, redirecting...");
+      navigate("/dashboard/my-rentals");
+    }
+  }, [parent, isLoading, navigate]);
+
+  // ✅ Loading state
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="text-gray-500">Loading...</div>
+      </div>
+    );
+  }
+
+  // ✅ Jika parent tidak ada setelah loading
+  if (!parent) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="text-gray-500">Redirecting...</div>
+      </div>
+    );
+  }
 
   const breadcrumbItems = [
     { name: "Dashboard", href: "/dashboard" },
     { name: "My Cars", href: "/dashboard/my-rentals" },
-    { name: parent?.title ?? "Car", current: true },
+    { name: parent.title, current: true },
   ];
 
   return (
@@ -18,7 +51,7 @@ export default function CarChild() {
       breadcrumb={breadcrumbItems}
       actionButton={
         <Link
-          to={"/dashboard/my-rentals/add-car"}
+          to={`${parent.route}/create-car`}
           className="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700"
         >
           Add Car
@@ -29,5 +62,14 @@ export default function CarChild() {
         <CarChildList />
       </div>
     </DashboardLayout>
+  );
+}
+
+// ✅ Komponen utama dengan Provider hanya di sini
+export default function CarChild() {
+  return (
+    <CarParentProvider>
+      <CarChildContent />
+    </CarParentProvider>
   );
 }

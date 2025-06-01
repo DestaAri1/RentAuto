@@ -3,3 +3,8 @@ export interface SubmissionError {
   network?: string;
   validation?: string;
 }
+
+export interface ImageError {
+  mainImage?: string;
+  additionalImages?: string;
+}

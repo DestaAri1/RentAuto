@@ -1,6 +1,6 @@
 import React, { FC, ReactElement } from "react";
 import { X, Plus } from "lucide-react";
-import { ImageItem } from "../../hooks/useCarForm.tsx";
+import { ImageItem } from "../../hooks/useImageUpload.tsx";
 
 interface AdditionalImagesProps {
   additionalImages: ImageItem[];

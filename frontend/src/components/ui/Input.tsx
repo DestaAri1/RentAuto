@@ -1,15 +1,22 @@
-import React from 'react'
+import React from "react";
 
 interface InputProps {
-    name: string;
-    value: string;
-    onChange: (e: any) => void;
-    placeholder?: string
-    id: string
-    type?: string
+  name: string;
+  value: string;
+  onChange: (e: any) => void;
+  placeholder?: string;
+  id: string;
+  type?: string;
 }
 
-export default function Input({name, value, onChange, placeholder, id, type = 'text'}: InputProps) {
+export default function Input({
+  name,
+  value,
+  onChange,
+  placeholder,
+  id,
+  type = "text",
+}: InputProps) {
   return (
     <div>
       <label

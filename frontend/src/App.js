@@ -9,9 +9,8 @@ import { AuthRoute, ProtectedRoute } from "./utils/RouteGuard.tsx";
 import Register from "./pages/Auth/Register.tsx";
 import CarsIndex from "./pages/Dashboard/Cars.tsx";
 import Bookings from "./pages/Dashboard/Bookings.tsx";
-import EditCar from "./pages/Dashboard/Car/EditCar.tsx";
-import AddCarChild from "./pages/Dashboard/Car/AddCarcChild.tsx";
 import CarChild from "./pages/Dashboard/CarChild.tsx";
+import AddCarChild from "./pages/Dashboard/CarChild/AddCarChild.tsx";
 
 function App() {
   return (
@@ -52,27 +51,14 @@ function App() {
               </ProtectedRoute>
             }
           />
-          {/* change */}
-          <Route
-            path="/dashboard/my-rentals/add-car"
-            element={
-              <ProtectedRoute>
-                <AddCarChild />
-              </ProtectedRoute>
-            }
-          />
-          {/* change */}
-          <Route
-            path="/dashboard/my-rentals/edit-car/:slug/:id"
-            element={
-              <ProtectedRoute>
-                <EditCar />
-              </ProtectedRoute>
-            }
-          />
           <Route path="/dashboard/my-rentals/:slug" element={
             <ProtectedRoute>
               <CarChild/>
+            </ProtectedRoute>
+          }/>
+          <Route path="/dashboard/my-rentals/:slug/create-car" element={
+            <ProtectedRoute>
+              <AddCarChild/>
             </ProtectedRoute>
           }/>
           <Route

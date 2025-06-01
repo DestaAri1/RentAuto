@@ -1,11 +1,11 @@
 import React, { useMemo } from "react";
 import { Table, TableBody, TableHead, Td, Th } from "../../../Table.tsx";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom"; // ✅ Tambah useNavigate
 import { Cars, CarsProps } from "../../../../types/index.tsx";
 import { DashBoxTitle } from "../../../DashboardComponents.tsx";
 import { Star } from "lucide-react";
 import { usePagination } from "../../../../hooks/usePagination.tsx";
-import { setLocalStorage } from "../../../../services/TokenServices.tsx";
+import { useCarParent } from "../../../../context/CarParentContext.tsx";
 
 interface CarModalProps {
   onUpdate: (car: Cars) => void;
@@ -16,6 +16,7 @@ type CombinedProps = CarsProps & CarModalProps;
 
 export default function CarData({ cars, onUpdate, onDelete }: CombinedProps) {
   const itemsPerPage = 5;
+  const navigate = useNavigate();
 
   // Menggunakan generics untuk tipe car
   const {
@@ -36,6 +37,26 @@ export default function CarData({ cars, onUpdate, onDelete }: CombinedProps) {
     () => paginatedItems(cars),
     [cars, paginatedItems]
   );
+
+  // ✅ Handler untuk VIEW button
+  const handleViewClick = (car: Cars) => {
+    const data = {
+      id: car.id.toString(),
+      title: car.name,
+      route: `/dashboard/my-rentals/${car.slug}`,
+    };
+
+    // ✅ Set langsung ke localStorage tanpa context dulu
+    try {
+      localStorage.setItem("car_parent", JSON.stringify(data));
+    } catch (error) {
+      console.error("❌ Error saving to localStorage:", error);
+    }
+
+    setTimeout(() => {
+      navigate(`/dashboard/my-rentals/${car.slug}`);
+    }, 200); // Tambah delay jadi 200ms
+  };
 
   // Menghitung indeks awal untuk penomoran
   const startIndex = (currentPage - 1) * itemsPerPage;
@@ -83,21 +104,13 @@ export default function CarData({ cars, onUpdate, onDelete }: CombinedProps) {
                         <Td>{car.available}</Td>
                         <Td>{car.available}</Td>
                         <Td className="text-right text-sm font-medium">
-                          <Link
-                            to={`/dashboard/my-rentals/${car.slug}`}
+                          <button
+                            onClick={() => handleViewClick(car)}
                             className="text-yellow-600 hover:text-yellow-900"
-                            onClick={() =>
-                              setLocalStorage(
-                                "car_parent",
-                                JSON.stringify({
-                                  title: car.name,
-                                  route: `/dashboard/my-rentals/${car.slug}`,
-                                })
-                              )
-                            }
+                            type="button"
                           >
                             VIEW
-                          </Link>
+                          </button>
                           <button
                             onClick={() => onUpdate(car)}
                             className="text-blue-600 hover:text-blue-900 ml-4"

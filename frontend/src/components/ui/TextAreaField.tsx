@@ -1,22 +1,15 @@
 import React, { FC, ReactElement } from "react";
 import { BaseInputField } from "../../types/form";
 
-interface InputFieldProps extends BaseInputField{
-  type?: string;
-  min?: string;
-  max?: string;
-  step?: string;
+interface TextAreaFieldProps extends BaseInputField{
+  rows?: number;
 }
 
-export const InputField: FC<InputFieldProps> = ({
+export const TextAreaField: FC<TextAreaFieldProps> = ({
   label,
   name,
   placeholder,
   icon,
-  type = "text",
-  min,
-  max,
-  step,
   required = false,
   className = "",
   error,
@@ -24,16 +17,10 @@ export const InputField: FC<InputFieldProps> = ({
   disabled = false,
   onBlur,
   helperText,
+  rows = 4,
   ...props
 }): ReactElement => {
   const hasError = !!error;
-
-  // Convert type to appropriate register options
-  const registerOptions: any = {};
-
-  if (type === "number") {
-    registerOptions.valueAsNumber = true;
-  }
 
   return (
     <div className={`relative ${className}`}>
@@ -47,7 +34,7 @@ export const InputField: FC<InputFieldProps> = ({
       </label>
 
       <div
-        className={`flex items-center border-2 rounded-xl px-4 py-3 transition-all duration-200 ${
+        className={`flex items-start border-2 rounded-xl px-4 py-3 transition-all duration-200 ${
           hasError
             ? "border-red-500 bg-red-50 focus-within:border-red-600"
             : disabled
@@ -55,19 +42,18 @@ export const InputField: FC<InputFieldProps> = ({
             : "border-gray-300 focus-within:border-indigo-500 focus-within:bg-white"
         }`}
       >
-        <div className={`mr-3 ${hasError ? "text-red-500" : "text-gray-500"}`}>
+        <div
+          className={`mr-3 mt-1 ${hasError ? "text-red-500" : "text-gray-500"}`}
+        >
           {icon}
         </div>
-        <input
-          {...register(name, registerOptions)}
-          type={type}
+        <textarea
+          {...register(name)}
           placeholder={placeholder}
-          min={min}
-          max={max}
-          step={step}
           disabled={disabled}
           onBlur={onBlur}
-          className={`w-full outline-none bg-transparent ${
+          rows={rows}
+          className={`w-full outline-none bg-transparent resize-none ${
             hasError
               ? "text-red-900 placeholder-red-400"
               : disabled
@@ -86,7 +72,6 @@ export const InputField: FC<InputFieldProps> = ({
         />
       </div>
 
-      {/* Error message */}
       {hasError && (
         <div id={`${name}-error`} className="mt-2 flex items-start">
           <svg
@@ -106,35 +91,13 @@ export const InputField: FC<InputFieldProps> = ({
         </div>
       )}
 
-      {/* Helper text */}
       {!hasError && helperText && (
         <div id={`${name}-helper`} className="mt-2 text-sm text-gray-500">
           {helperText}
         </div>
       )}
-
-      {/* Field-specific validation hints */}
-      {!hasError && (
-        <>
-          {name === "name" && (
-            <div className="mt-1 text-xs text-gray-400">
-              2-100 characters, letters, numbers, spaces, hyphens only
-            </div>
-          )}
-          {name === "price" && (
-            <div className="mt-1 text-xs text-gray-400">
-              $1 - $10,000 per day
-            </div>
-          )}
-          {name === "seats" && (
-            <div className="mt-1 text-xs text-gray-400">
-              1-14 seats (realistic numbers preferred)
-            </div>
-          )}
-        </>
-      )}
     </div>
   );
 };
 
-export default InputField;
+export default TextAreaField;

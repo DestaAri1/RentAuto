@@ -1,5 +1,10 @@
 import { Variants } from "framer-motion";
 import { LucideIcon } from "lucide-react";
+import { ReactNode } from "react";
+
+export interface ChildProps {
+  children: ReactNode;
+}
 
 // Define user type
 export interface User {
@@ -129,18 +134,18 @@ export interface CarChild {
   name: string;
   alias: string;
   image: string;
-  slug:string
-  status: number
-  color: string
-  carParent: Cars
-  description: string
-  is_active: boolean
+  slug: string;
+  status: number;
+  color: string;
+  carParent: Cars;
+  description: string;
+  is_active: boolean;
   Parent: {
     id: string;
-    name: string
-  }
+    name: string;
+  };
 }
 
 export interface CarChildProps {
-  carChild: CarChild[]
+  carChild: CarChild[];
 }
