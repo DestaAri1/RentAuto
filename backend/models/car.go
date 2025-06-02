@@ -88,6 +88,7 @@ type CarChildResponse struct {
 	ID          uuid.UUID `json:"id"`
 	Name        string    `json:"name"`
 	Alias       string    `json:"alias"`
+	Slug        string    `json:"slug"`
 	Status      *int      `json:"status"`
 	Color       string    `json:"color"`
 	Description string    `json:"description"`
@@ -105,7 +106,7 @@ type CarRepository interface {
 
 type CarChildRepository interface {
 	GetCarChilds(ctx context.Context, carParentSlug string) ([]*CarChildResponse, error)
-	GetOneCarChild(ctx context.Context, carChildId uuid.UUID) (*CarChild, error)
+	GetOneCarChild(ctx context.Context, carChildSlug string) (*CarChildResponse, error)
 	CreateCarChild(ctx context.Context, formData *FormCarChild, userId uuid.UUID) error
 	UpdateCarChild(ctx context.Context, updateData map[string]interface{}, userId uuid.UUID, carChildId uuid.UUID) error
 	DeleteCarChild(ctx context.Context, carChildId uuid.UUID) error

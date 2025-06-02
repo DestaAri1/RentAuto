@@ -80,10 +80,7 @@ func (h *CarChildHandler) GetOneCarChild(ctx *fiber.Ctx) error {
 		return h.handlerError(ctx, fiber.StatusForbidden, "You don't have permission to view cars")
 	}
 
-	carChildId, err := h.ParseUUID(ctx.Params("carChildId"))
-	if err != nil {
-		return h.handlerError(ctx, fiber.StatusUnprocessableEntity, err.Error())
-	}
+	carChildId := ctx.Params("carChildSlug")
 	
 	result, err := h.repository.GetOneCarChild(context, carChildId)
 
@@ -309,7 +306,7 @@ func NewCarChildHandler(router fiber.Router, repository models.CarChildRepositor
 	}
 
 	router.Get("/:carSlug", handler.GetCarChild)
-	router.Get("/view/:carChildId", handler.GetOneCarChild)
+	router.Get("/view/:carChildSlug", handler.GetOneCarChild)
 	router.Post("/", handler.CreateCarChild)
 	router.Patch("/:carChildId", handler.UpdateCarChild)
 	router.Delete("/:carChildId", handler.DeleteCar)

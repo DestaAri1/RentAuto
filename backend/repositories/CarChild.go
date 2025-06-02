@@ -51,6 +51,7 @@ func (r *CarChildRepository) GetCarChilds(ctx context.Context, carParentSlug str
 			ID: carChild.ID.ID,
 			Name: carChild.Name,
 			Alias: carChild.Alias,
+			Slug: carChild.Slug,
 			Status: carChild.Status,
 			Color: carChild.Color,
 			Description: carChild.Description,
@@ -68,19 +69,31 @@ func (r *CarChildRepository) GetCarChilds(ctx context.Context, carParentSlug str
 	return carChildResponse, nil
 }
 
-func (r *CarChildRepository) GetOneCarChild(ctx context.Context, carChildId uuid.UUID) (*models.CarChild, error) {
-	carChild := &models.CarChild{}
+func (r *CarChildRepository) GetOneCarChild(ctx context.Context, carChildSlug string) (*models.CarChildResponse, error) {
+	// carChild := &models.CarChild{}
 
-	checkCarChild := r.db.Model(carChild).Where("id = ?", carChildId).First(&carChild)
-	if checkCarChild.RowsAffected == 0 {
-		return nil, errors.New("id not found")
+	var carChild models.CarChild
+	if err := r.db.Model(&models.CarChild{}).Where("slug = ? AND deleted_at IS NULL", carChildSlug).Preload("CarParent").First(&carChild); err.Error != nil {
+		return nil, errors.New("child not found")
 	}
 
-	if checkCarChild.Error != nil {
-		return nil, checkCarChild.Error
+	carChildResponse := &models.CarChildResponse{
+		ID: carChild.ID.ID,
+		Name: carChild.Name,
+		Alias: carChild.Alias,
+		Slug: carChild.Slug,
+		Status: carChild.Status,
+		Color: carChild.Color,
+		Description: carChild.Description,
+		Image: carChild.ImageURL,
+		IsActive: carChild.IsActive,
+		Parent: models.CarParentResponse2{
+			ID: carChild.CarParent.ID.ID,
+			Name: carChild.CarParent.Name,
+		},
 	}
-	
-	return carChild, nil
+
+	return carChildResponse, nil
 }
 
 func (r *CarChildRepository) CreateCarChild(ctx context.Context, formData *models.FormCarChild, userId uuid.UUID) error {
