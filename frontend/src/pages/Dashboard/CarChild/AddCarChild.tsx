@@ -5,10 +5,24 @@ import {
 } from "../../../components/Dashboard/Cars/CarChild/CarChildProps.tsx";
 import FormCarChild from "../../../components/Dashboard/Cars/CarChild/FormCarChild.tsx";
 import { useEffect } from "react";
-import { useCarParent } from "../../../context/CarParentContext.tsx";
+import {
+  CarParentProvider,
+  useCarParent,
+} from "../../../context/CarParentContext.tsx";
+import { useNavigate } from "react-router-dom";
 
-export default function AddCarChild() {
-  const parent = useCarParent()
+function AddCarChildContent() {
+  const { parent, isLoading } = useCarParent();
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    // ✅ Tunggu loading selesai baru redirect
+    if (!isLoading && !parent) {
+      console.log("No parent data found, redirecting...");
+      navigate("/dashboard/my-rentals");
+    }
+  }, [parent, isLoading, navigate]);
+
   const breadcrumbItems = [
     { name: "Dashboard", href: "/dashboard" },
     { name: "My Cars", href: "/dashboard/my-rentals" },
@@ -16,11 +30,6 @@ export default function AddCarChild() {
     { name: "Create Car Child", current: true },
   ];
 
-  useEffect(() => {
-    if (parent === null) {
-      document.location.href = "/dashboard/my-rentals";
-    }
-  }, [parent]);
   return (
     <DashboardLayout breadcrumb={breadcrumbItems} title="Add Car">
       <ParentFormCarChild>
@@ -28,5 +37,13 @@ export default function AddCarChild() {
         <FormCarChild />
       </ParentFormCarChild>
     </DashboardLayout>
+  );
+}
+
+export default function AddCarChild() {
+  return (
+    <CarParentProvider>
+      <AddCarChildContent />
+    </CarParentProvider>
   );
 }

@@ -21,16 +21,6 @@ function CarChildContent() {
     }
   }, [parent, isLoading, navigate]);
 
-  // ✅ Loading state
-  if (isLoading) {
-    return (
-      <div className="flex items-center justify-center min-h-screen">
-        <div className="text-gray-500">Loading...</div>
-      </div>
-    );
-  }
-
-  // ✅ Jika parent tidak ada setelah loading
   if (!parent) {
     return (
       <div className="flex items-center justify-center min-h-screen">
