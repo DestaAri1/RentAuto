@@ -222,6 +222,7 @@ export default function useFormCarChild() {
 
       watchedValues: memoizedWatchedValues,
       setValue,
+      watch,
       reset,
       trigger,
 
@@ -253,7 +254,8 @@ export default function useFormCarChild() {
       isValid,
       isFormSubmitted,
       memoizedWatchedValues,
-      setValue,
+      setValue, // Tambahkan ini
+      watch, // Tambahkan ini
       reset,
       trigger,
       getFieldError,

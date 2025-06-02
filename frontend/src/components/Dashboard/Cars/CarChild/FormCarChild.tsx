@@ -1,11 +1,18 @@
 import React, { useMemo, useCallback } from "react";
 import ImageUploader from "../../../ui/ImageUploader.tsx";
 import InputField from "../../../ui/InputField.tsx";
-import { Car, CarFront, NotebookText, Palette, Type, UserCheck } from "lucide-react";
+import {
+  Car,
+  CarFront,
+  NotebookText,
+  Palette,
+  Type,
+  UserCheck,
+} from "lucide-react";
 import AdditionalImages from "../../../ui/AddAditionalImages.tsx";
 import SelectField from "../../../ui/SelectField.tsx";
 import useFormCarChild from "../../../../hooks/useFormCarChild.tsx";
-import TextAreaField from "../../../ui/TextAreaField.tsx";
+import TinyMCEField from "../../../ui/TextAreaField.tsx";
 
 export default function FormCarChild() {
   const {
@@ -26,6 +33,8 @@ export default function FormCarChild() {
     watchedValues,
     isFormValid,
     hasMainImage,
+    setValue, // Tambahkan setValue
+    watch, // Tambahkan watch
   } = useFormCarChild();
 
   const formCarChild = useMemo(
@@ -136,6 +145,7 @@ export default function FormCarChild() {
           />
         ))}
       </div>
+
       <SelectField
         data={statusInfo}
         icon={<Type className="w-5 h-5 text-gray-500" />}
@@ -148,14 +158,18 @@ export default function FormCarChild() {
         required
       />
 
-      <TextAreaField
+      {/* Ganti TextAreaField dengan TinyMCEField */}
+      <TinyMCEField
         icon={<NotebookText className="w-5 h-5 text-gray-500" />}
         label="Description"
         name="description"
-        placeholder="Input your description"
+        placeholder="Enter detailed description about your car..."
         register={register}
+        setValue={setValue}
+        watch={watch}
         error={errors.description}
-        rows={5}
+        height={400}
+        helperText="Provide a detailed description to attract more customers"
       />
 
       <AdditionalImages
