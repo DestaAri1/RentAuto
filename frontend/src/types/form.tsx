@@ -23,11 +23,12 @@ export interface CarChildFormData {
   color: string;
   description: string;
   car_parent: string;
+  imageUrl?: string; // For update mode - existing image URL
+  id?: string; // For update mode - car child ID
 }
 
 export interface BaseForm {
-  // We need register, errors, and watcheValues
-  handleSubmit: (e: React.FormEvent<HTMLFormElement>) => void;
+  handleSubmit?: (e: React.FormEvent<HTMLFormElement>) => void;
   isSubmitting: boolean;
   isValid: boolean;
   isDirty: boolean;
@@ -36,7 +37,7 @@ export interface BaseForm {
     network?: string;
     validation?: string;
   };
-  resetAllErrors: () => void;
+  resetAllErrors?: () => void;
 }
 
 export interface ImageProps {
@@ -58,4 +59,37 @@ export interface AdditionalImageProps {
     mainImage?: string;
     additionalImages?: string;
   };
+}
+
+// Image error interface
+export interface ImageError {
+  mainImage?: string;
+  additionalImages?: string;
+}
+
+// Form mode type
+export type FormMode = "create" | "update";
+
+// Props for FormCarChild component
+export interface FormCarChildProps {
+  mode?: FormMode;
+  initialData?: Partial<CarChildFormData>;
+  carChildId?: string;
+}
+
+// Props for useFormCarChild hook
+export interface UseFormCarChildProps {
+  mode?: FormMode;
+  initialData?: Partial<CarChildFormData>;
+  carChildId?: string;
+}
+
+// Extended car child data for API responses
+export interface CarChildData extends CarChildFormData {
+  id: string;
+  imageUrl?: string;
+  additionalImageUrls?: string[];
+  createdAt?: string;
+  updatedAt?: string;
+  slug?: string;
 }

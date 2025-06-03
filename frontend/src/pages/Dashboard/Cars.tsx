@@ -80,7 +80,7 @@ export default function CarsIndex() {
     try {
       // Call onSubmit dari useCarForm
       await addCarForm.onSubmit(formData);
-      await fetchCars()
+      await fetchCars();
     } catch (error) {
       console.error("❌ Error in handleCreateCarSubmit:", error);
     }
@@ -93,7 +93,7 @@ export default function CarsIndex() {
     try {
       // Call onUpdate dari useCarForm
       await updateCarForm.onUpdate(formData, carId);
-      await fetchCars()
+      await fetchCars();
     } catch (error) {
       console.error("❌ Error in handleUpdateCarSubmit:", error);
     }

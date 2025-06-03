@@ -133,7 +133,7 @@ export interface CarChild {
   id: string;
   name: string;
   alias: string;
-  image: string;
+  image_url: string;
   slug: string;
   status: number;
   color: string;

@@ -80,6 +80,21 @@ const descriptionSchema = ({ field }: { field: string }) =>
       `${capitalize(field)} cannot contain excessive spaces`
     );
 
+const imageSchema = ({ field }: { field: string }) =>
+  z
+    .any()
+    .refine((file) => file instanceof File, `${capitalize(field)} is required`)
+    .refine(
+      (file) => file instanceof File && file.size <= 5 * 1024 * 1024,
+      `${capitalize(field)} must be less than 5MB`
+    )
+    .refine(
+      (file) =>
+        file instanceof File &&
+        ["image/jpeg", "image/png", "image/webp"].includes(file.type),
+      `${capitalize(field)} must be a valid image (jpg, png, webp)`
+    );
+
 export const carFormSchema = z.object({
   name: nameCCSchema({ field: "name" }),
   price: priceSchema({ field: "price" }),
@@ -101,14 +116,10 @@ export const carChildFormSchema = z.object({
   name: nameCCSchema({ field: "name" }),
   alias: nameCCSchema({ field: "alias" }),
   color: nameCCSchema({ field: "color" }),
-  status: numberSchema({ field: "status" }, (schema) =>
-    schema.refine(
-      (value) => [1, 2, 3, 4, 5].includes(value),
-      "Please enter a realistic number of seats"
-    )
-  ),
-  description: descriptionSchema({ field: "description" }),
-  car_parent: uuidSchema({ field: "parent" }),
+  status: z.number().min(0).max(1),
+  description: z.string().optional(),
+  car_parent: z.string().min(1, "Car parent is required"),
+  imageUrl: z.string().url().optional(),
 });
 
 export type CarChildFormData = z.infer<typeof carChildFormSchema>;

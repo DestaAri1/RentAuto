@@ -1,14 +1,18 @@
-import { lazy, Suspense } from 'react'
-import { ParentCarChildList } from './CarChildProps.tsx'
-import Loading from '../../../Loading.tsx';
+import { lazy, Suspense } from "react";
+import { ParentCarChildList } from "./CarChildProps.tsx";
+import Loading from "../../../Loading.tsx";
 
 const CChildList = lazy(() => import("./CChildList.tsx"));
 
-export default function CarChildList() {
+interface Props {
+  route: string;
+}
+
+export default function CarChildList({ route }: Props) {
   return (
     <ParentCarChildList>
       <Suspense fallback={<Loading name="Load Car" />}>
-        <CChildList />
+        <CChildList route={route} />
       </Suspense>
     </ParentCarChildList>
   );

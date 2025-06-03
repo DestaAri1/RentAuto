@@ -1,4 +1,4 @@
-import React, { useMemo, useCallback } from "react";
+import React, { useMemo, useCallback, useEffect } from "react";
 import ImageUploader from "../../../ui/ImageUploader.tsx";
 import InputField from "../../../ui/InputField.tsx";
 import {
@@ -13,8 +13,19 @@ import AdditionalImages from "../../../ui/AddAditionalImages.tsx";
 import SelectField from "../../../ui/SelectField.tsx";
 import useFormCarChild from "../../../../hooks/useFormCarChild.tsx";
 import TinyMCEField from "../../../ui/TextAreaField.tsx";
+import { CarChildFormData } from "../../../../types/form.tsx";
 
-export default function FormCarChild() {
+interface FormCarChildProps {
+  mode?: "create" | "update";
+  initialData?: Partial<CarChildFormData>;
+  carChildId?: string;
+}
+
+export default function FormCarChild({
+  mode = "create",
+  initialData = {},
+  carChildId,
+}: FormCarChildProps) {
   const {
     register,
     wrappedHandleSubmit,
@@ -33,9 +44,30 @@ export default function FormCarChild() {
     watchedValues,
     isFormValid,
     hasMainImage,
-    setValue, // Tambahkan setValue
-    watch, // Tambahkan watch
-  } = useFormCarChild();
+    setValue,
+    watch,
+    initializeForm,
+  } = useFormCarChild({ mode, initialData, carChildId });
+
+  // Initialize form with data when in update mode
+  useEffect(() => {
+    if (
+      mode === "update" &&
+      initialData &&
+      Object.keys(initialData).length > 0
+    ) {
+      // Use a flag to prevent multiple initializations
+      const hasData =
+        initialData.name || initialData.alias || initialData.color;
+      if (hasData) {
+        initializeForm(initialData);
+      }
+    }
+  }, [
+    mode,
+    initializeForm,
+    initialData,
+  ]);
 
   const formCarChild = useMemo(
     () => [
@@ -46,6 +78,7 @@ export default function FormCarChild() {
         register: register,
         error: errors.name,
         icon: <Car className="w-5 h-5 text-gray-500" />,
+        required: true,
       },
       {
         label: "Alias",
@@ -54,6 +87,7 @@ export default function FormCarChild() {
         register: register,
         error: errors.alias,
         icon: <UserCheck className="w-5 h-5 text-gray-500" />,
+        required: true,
       },
       {
         label: "Color",
@@ -62,12 +96,13 @@ export default function FormCarChild() {
         register: register,
         error: errors.color,
         icon: <Palette className="w-5 h-5 text-gray-500" />,
+        required: true,
       },
       {
         label: "Car Parent",
         name: "car_parent",
         register: register,
-        placeholder: "hehe",
+        placeholder: "Car parent name",
         error: errors.car_parent,
         icon: <CarFront className="w-5 h-5 text-gray-500" />,
         disabled: true,
@@ -90,8 +125,12 @@ export default function FormCarChild() {
 
   // Memoize button disabled state
   const isButtonDisabled = useMemo(() => {
-    return isSubmitting || !isFormValid || !isDirty;
-  }, [isSubmitting, isFormValid, isDirty]);
+    if (mode === "create") {
+      return isSubmitting || !isFormValid || !isDirty;
+    }
+    // For update mode, allow submission even if not dirty (in case only images changed)
+    return isSubmitting || !isFormValid;
+  }, [mode, isSubmitting, isFormValid, isDirty]);
 
   // Memoize form submit handler
   const handleFormSubmit = useCallback(
@@ -107,14 +146,31 @@ export default function FormCarChild() {
 
     return (
       <div className="bg-gray-100 p-3 rounded text-xs">
+        <p>Debug: Mode: {mode}</p>
         <p>Debug: isFormValid: {isFormValid.toString()}</p>
         <p>Debug: hasMainImage: {hasMainImage.toString()}</p>
         <p>Debug: isDirty: {isDirty.toString()}</p>
         <p>Debug: isSubmitting: {isSubmitting.toString()}</p>
         <p>Debug: imageErrors: {JSON.stringify(imageErrors)}</p>
+        <p>Debug: carChildId: {carChildId || "N/A"}</p>
       </div>
     );
-  }, [isFormValid, hasMainImage, isDirty, isSubmitting, imageErrors]);
+  }, [
+    mode,
+    isFormValid,
+    hasMainImage,
+    isDirty,
+    isSubmitting,
+    imageErrors,
+    carChildId,
+  ]);
+
+  const buttonText = useMemo(() => {
+    if (isSubmitting) {
+      return mode === "create" ? "Creating..." : "Updating...";
+    }
+    return mode === "create" ? "Create Car Listing" : "Update Car Listing";
+  }, [mode, isSubmitting]);
 
   return (
     <form className="space-y-8" onSubmit={handleFormSubmit}>
@@ -123,7 +179,11 @@ export default function FormCarChild() {
         handleImageClick={handleImageClick}
         imageInputRef={fileInputRef}
         handleImageChange={handleImageChange}
-        placeholder="Click to upload main car image"
+        placeholder={
+          mode === "create"
+            ? "Click to upload main car image"
+            : "Click to change main car image"
+        }
         height="h-80"
       />
 
@@ -142,6 +202,7 @@ export default function FormCarChild() {
             error={item.error}
             icon={item.icon}
             disabled={item.disabled}
+            required={item.required}
           />
         ))}
       </div>
@@ -158,7 +219,6 @@ export default function FormCarChild() {
         required
       />
 
-      {/* Ganti TextAreaField dengan TinyMCEField */}
       <TinyMCEField
         icon={<NotebookText className="w-5 h-5 text-gray-500" />}
         label="Description"
@@ -198,6 +258,12 @@ export default function FormCarChild() {
         </div>
       )}
 
+      {submissionErrors.validation && (
+        <div className="bg-red-50 border border-red-200 rounded-xl p-4">
+          <p className="text-red-700">{submissionErrors.validation}</p>
+        </div>
+      )}
+
       {/* Debug info - remove in production */}
       {debugInfo}
 
@@ -208,7 +274,7 @@ export default function FormCarChild() {
           isButtonDisabled ? "opacity-50 cursor-not-allowed" : "hover:shadow-lg"
         }`}
       >
-        {isSubmitting ? "Creating..." : "Create Car Listing"}
+        {buttonText}
       </button>
     </form>
   );

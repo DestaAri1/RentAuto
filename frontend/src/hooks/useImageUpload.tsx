@@ -10,6 +10,7 @@ export interface ImageUploadHookResult {
   // Main image state and handlers
   mainImage: File | null;
   preview: string | null;
+  setPreview: React.Dispatch<React.SetStateAction<string | null>>;
   fileInputRef: React.RefObject<HTMLInputElement | null>;
   handleImageChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
   handleImageClick: () => void;
@@ -96,6 +97,7 @@ export const useImageUpload = (): ImageUploadHookResult => {
   }, []);
 
   return {
+    setPreview,
     mainImage,
     preview,
     fileInputRef,

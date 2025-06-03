@@ -5,15 +5,19 @@ import { useEffect } from "react";
 import CarChildStatusBadge from "./CarChildStatusBadge.tsx";
 import CarChildAvailable from "./CarChildAvailable.tsx";
 
-export default function CChildList() {
+interface Props {
+  route: string;
+}
+
+export default function CChildList({ route }: Props) {
   const { slug } = useParams<{ slug: string }>();
-  const { fetchCarChildren, carChildren, isFetched } = useCarChild();
+  const { fetchCarChild, carChildren, isFetched } = useCarChild();
 
   useEffect(() => {
     if (slug && !isFetched.current) {
-      fetchCarChildren(slug);
+      fetchCarChild({slug, mode: "all"});
     }
-  }, [slug, fetchCarChildren, isFetched]);
+  }, [slug, fetchCarChild, isFetched]);
   return (
     <>
       <Table>
@@ -37,9 +41,13 @@ export default function CChildList() {
                 <Td className="font-medium text-gray-900">{index + 1}</Td>
                 <Td>{car.name}</Td>
                 <Td>{car.alias}</Td>
-                <Td><CarChildStatusBadge status={car.status}/></Td>
+                <Td>
+                  <CarChildStatusBadge status={car.status} />
+                </Td>
                 <Td>{car.color}</Td>
-                <Td><CarChildAvailable status={car.is_active}/></Td>
+                <Td>
+                  <CarChildAvailable status={car.is_active} />
+                </Td>
                 <Td className="text-right text-sm font-medium">
                   <Link
                     to={"/"}
@@ -48,7 +56,7 @@ export default function CChildList() {
                     VIEW
                   </Link>
                   <Link
-                    to={"/"}
+                    to={`${route}/${car.slug}`}
                     className="text-blue-600 hover:text-blue-900 ml-4"
                   >
                     UPDATE

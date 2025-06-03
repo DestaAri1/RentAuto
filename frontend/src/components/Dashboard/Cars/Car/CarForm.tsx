@@ -15,7 +15,7 @@ export interface CarFormProps {
   isDirty: boolean;
   isValid: boolean;
   submissionErrors: SubmissionError;
-  onSubmit: () => void; // ✅ Changed to simple function
+  onSubmit: () => void;
   watchedValues: CarFormData;
   carTypes: CarType[];
   // New props for flexibility

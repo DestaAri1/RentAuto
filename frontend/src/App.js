@@ -11,6 +11,7 @@ import CarsIndex from "./pages/Dashboard/Cars.tsx";
 import Bookings from "./pages/Dashboard/Bookings.tsx";
 import CarChild from "./pages/Dashboard/CarChild.tsx";
 import AddCarChild from "./pages/Dashboard/CarChild/AddCarChild.tsx";
+import UpdateCarChild from "./pages/Dashboard/CarChild/UpdateCarChild.tsx";
 
 function App() {
   return (
@@ -51,16 +52,30 @@ function App() {
               </ProtectedRoute>
             }
           />
-          <Route path="/dashboard/my-rentals/:slug" element={
-            <ProtectedRoute>
-              <CarChild/>
-            </ProtectedRoute>
-          }/>
-          <Route path="/dashboard/my-rentals/:slug/create-car" element={
-            <ProtectedRoute>
-              <AddCarChild/>
-            </ProtectedRoute>
-          }/>
+          <Route
+            path="/dashboard/my-rentals/:slug"
+            element={
+              <ProtectedRoute>
+                <CarChild />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/dashboard/my-rentals/:slug/create-car"
+            element={
+              <ProtectedRoute>
+                <AddCarChild />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/dashboard/my-rentals/:slug/:slug"
+            element={
+              <ProtectedRoute>
+                <UpdateCarChild />
+              </ProtectedRoute>
+            }
+          />
           <Route
             path="/dashboard/bookings"
             element={
