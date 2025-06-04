@@ -157,6 +157,60 @@ func (h *CarChildHandler) CreateCarChild(ctx *fiber.Ctx) error {
 	return h.handlerSuccess(ctx, fiber.StatusCreated, "Car Child Created Successfully!", nil)
 }
 
+func (h *CarChildHandler) UpdateStatusCarChild(ctx *fiber.Ctx) error {
+	context, cancel := h.WithTimeout(5 * time.Second)
+	defer cancel()
+
+	roleId, err := h.GetRoleID(ctx)
+	if err != nil {
+		return h.handlerError(ctx, fiber.StatusUnauthorized, err.Error())
+	}
+
+	if err := h.CheckPermission(context, roleId, "update"); err != nil {
+		return h.handlerError(ctx, fiber.StatusForbidden, "You don't have permission to update car")
+	}
+
+	userId, err := h.GetUserID(ctx)
+	if err != nil {
+		return h.handlerError(ctx, fiber.StatusUnauthorized, err.Error())
+	}
+
+	carChildId, err := h.ParseUUID(ctx.Params("carChildId"))
+	if err != nil {
+		return h.handlerError(ctx, fiber.StatusUnprocessableEntity, err.Error())
+	}
+
+	formData := &models.StatusForm{}
+	if err := ctx.BodyParser(formData); err != nil {
+		return h.handlerError(ctx, fiber.StatusUnprocessableEntity, err.Error())
+	}
+
+	// Validate form data
+	if err := validator.New().Struct(formData); err != nil {
+		validator := validators.NewCarChildValidator()
+		return h.handleValidationError(ctx, err, &validator)
+	}
+
+	updatedData := make(map[string]interface{})
+
+	if formData.Status != nil {
+		updatedData["status"] = formData.Status
+	}
+
+	// Check if we have any data to update
+	if len(updatedData) == 0 {
+		return h.handlerError(ctx, fiber.StatusBadRequest, "No data provided for update")
+	}
+
+	// Update car child in repository
+	err = h.repository.UpdateStatusCarChild(context, updatedData, userId, carChildId)
+	if err != nil {
+		return h.handlerError(ctx, fiber.StatusBadRequest, err.Error())
+	}
+
+	return h.handlerSuccess(ctx, fiber.StatusOK, "Car Child updated successfully!", nil)
+}
+
 func (h *CarChildHandler) UpdateCarChild(ctx *fiber.Ctx) error {
 	context, cancel := h.WithTimeout(5 * time.Second)
 	defer cancel()
@@ -308,6 +362,7 @@ func NewCarChildHandler(router fiber.Router, repository models.CarChildRepositor
 	router.Get("/:carSlug", handler.GetCarChild)
 	router.Get("/view/:carChildSlug", handler.GetOneCarChild)
 	router.Post("/", handler.CreateCarChild)
+	router.Patch("/update-status/:carChildId", handler.UpdateStatusCarChild)
 	router.Patch("/:carChildId", handler.UpdateCarChild)
 	router.Delete("/:carChildId", handler.DeleteCar)
 }

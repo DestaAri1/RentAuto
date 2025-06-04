@@ -317,6 +317,110 @@ func (r *CarChildRepository) UpdateCarChild(ctx context.Context, updateData map[
 	return nil
 }
 
+func (r *CarChildRepository) UpdateStatusCarChild(ctx context.Context, updateData map[string]interface{}, userId uuid.UUID, carChildId uuid.UUID) error {
+	if len(updateData) == 0 {
+		return errors.New("no data provided for update")
+	}
+
+	tx := r.db.Begin()
+	if tx.Error != nil {
+		return tx.Error
+	}
+	defer func() {
+		if r := recover(); r != nil {
+			tx.Rollback()
+		}
+	}()
+
+	// Get current car child data
+	var carChild models.CarChild
+	err := tx.Model(&models.CarChild{}).Where("id = ?", carChildId).First(&carChild)
+	if err.Error != nil {
+		tx.Rollback()
+		return errors.New("data not found")
+	}
+
+	// Get current and new status values
+	var currentStatus int
+	if carChild.Status != nil {
+		currentStatus = *carChild.Status
+	}
+
+	var newStatus int
+	if statusValue, ok := updateData["status"]; ok {
+		if statusPtr, ok := statusValue.(*int); ok && statusPtr != nil {
+			newStatus = *statusPtr
+		} else if statusInt, ok := statusValue.(int); ok {
+			newStatus = statusInt
+		} else {
+			tx.Rollback()
+			return errors.New("invalid status value")
+		}
+	} else {
+		tx.Rollback()
+		return errors.New("status is required")
+	}
+
+	// Check if status is actually changing
+	if newStatus == currentStatus {
+		tx.Rollback()
+		return errors.New("cannot update while the status is still the same")
+	}
+
+	// Determine isActive based on new status
+	var isActive bool
+	switch newStatus {
+	case 1: // IsActive
+		isActive = true
+	case 2, 3, 4, 5: // Maintenance, UseByOwner, Inactive, Reserved
+		isActive = false
+	default:
+		tx.Rollback()
+		return errors.New("invalid status value")
+	}
+
+	// Update both status and is_active
+	updateData["is_active"] = isActive
+
+	// Perform the update
+	res := tx.Model(&models.CarChild{}).Where("id = ?", carChildId).Updates(updateData)
+	if res.Error != nil {
+		tx.Rollback()
+		return res.Error
+	}
+
+	if res.RowsAffected == 0 {
+		tx.Rollback()
+		return errors.New("no rows were updated")
+	}
+
+	// Commit transaction
+	if err := tx.Commit().Error; err != nil {
+		return err
+	}
+
+	// Update car parent available count after successful update
+	updates := map[string]int{}
+	
+	// Status changed from available (1) to not available (!= 1)
+	if currentStatus == 1 && newStatus != 1 {
+		updates["available"] = -1
+	}
+	// Status changed from not available (!= 1) to available (1)
+	if currentStatus != 1 && newStatus == 1 {
+		updates["available"] = 1
+	}
+
+	// Update parent if needed
+	if len(updates) > 0 {
+		if err := r.updateCarParentColumn(ctx, carChild.CarParentId, updates); err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
 func (r *CarChildRepository) DeleteCarChild(ctx context.Context, carChildId uuid.UUID) error {
 	tx := r.db.Begin()
 	if tx.Error != nil {

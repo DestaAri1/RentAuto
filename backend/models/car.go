@@ -29,8 +29,8 @@ type CarChild struct {
 	Name        string         `json:"name" gorm:"not null"`
 	Alias       string         `json:"alias" gorm:"not null"`
 	Slug        string         `json:"slug" gorm:"not null"`
-	Status      *int           `json:"status" gorm:"default:0"`
-	IsActive    *bool          `json:"is_active" gorm:"default:false"`
+	Status      *int           `json:"status" gorm:"default:1"`
+	IsActive    *bool          `json:"is_active" gorm:"default:true"`
 	ImageURL    string         `json:"image_url"`
 	Color       string         `json:"color" gorm:"not null"`
 	CarParentId uuid.UUID      `json:"car_parent_id" default:"not null"`
@@ -97,6 +97,18 @@ type CarChildResponse struct {
 	Parent 		CarParentResponse2
 }
 
+const (
+	IsActive = 1
+	Maintenance = 2
+	UseByOwner = 3
+	Inactive = 4
+	Reserved = 5
+)
+
+type StatusForm struct {
+	Status      *int      `json:"status" validate:"required,min=1,max=5"`
+}
+
 type CarRepository interface {
 	GetCars(ctx context.Context) ([]*CarParentResponse, error)
 	CreateCar(ctx context.Context, formData *FormCarParent, userId uuid.UUID) error
@@ -109,6 +121,7 @@ type CarChildRepository interface {
 	GetOneCarChild(ctx context.Context, carChildSlug string) (*CarChildResponse, error)
 	CreateCarChild(ctx context.Context, formData *FormCarChild, userId uuid.UUID) error
 	UpdateCarChild(ctx context.Context, updateData map[string]interface{}, userId uuid.UUID, carChildId uuid.UUID) error
+	UpdateStatusCarChild(ctx context.Context, updateData map[string]interface{}, userId uuid.UUID, carChildId uuid.UUID) error
 	DeleteCarChild(ctx context.Context, carChildId uuid.UUID) error
 }
 
