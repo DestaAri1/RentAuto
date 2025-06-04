@@ -21,9 +21,21 @@ export default function CarChildStatusBadge({ status }: Props) {
       statusText = "Active";
       colorClass = "bg-green-600";
       break;
+    case 2:
+      statusText = "Maintenance";
+      colorClass = "bg-yellow-600";
+      break;
+    case 3:
+      statusText = "Used By Owner";
+      colorClass = "bg-purple-600";
+      break;
     case 4:
       statusText = "Inactive";
       colorClass = "bg-gray-400";
+      break;
+    case 5:
+      statusText = "Reserved";
+      colorClass = "bg-red-400";
       break;
     default:
       break;

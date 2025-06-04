@@ -1,31 +1,28 @@
 import React from "react";
-import { Cars, ModalProps } from "../../../../types";
+import { CarChild, ModalProps } from "../../../../types";
 import Modal from "../../../Modal.tsx";
 
-interface DeleteCarModalProps extends ModalProps {
-  onConfirm: (car: Cars) => void;
-  car: Cars | null;
+interface DeleteModalProps extends ModalProps {
+  car: CarChild;
+  onSubmit: (car: CarChild) => void;
 }
 
-export const DeleteCarModal: React.FC<DeleteCarModalProps> = ({
+export default function CarChildDeleteModal({
   isOpen,
   onClose,
-  onConfirm,
   car,
-}) => {
+  onSubmit,
+}: DeleteModalProps) {
   const handleDelete = () => {
-    if (car) {
-      onConfirm(car);
-    }
-    onClose();
-  };    
-  
+    onSubmit(car);
+  };
   return (
-    <Modal isOpen={isOpen} onClose={onClose} title="Delete Car">
+    <Modal isOpen={isOpen} onClose={onClose} title="Delete Car Child">
       <div>
         <p className="text-sm text-gray-500">
           Are you sure you want to delete car "<b>{car?.name}</b>"? This action
-          cannot be undone. <br/><b className="text-red-600">WARNING </b>
+          cannot be undone. <br />
+          <b className="text-red-600">WARNING </b>
           all of the contents inside will be deleted.
         </p>
         <div className="flex justify-end space-x-3 mt-4">
@@ -47,6 +44,4 @@ export const DeleteCarModal: React.FC<DeleteCarModalProps> = ({
       </div>
     </Modal>
   );
-};
-
-export default DeleteCarModal;
+}

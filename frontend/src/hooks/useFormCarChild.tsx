@@ -7,14 +7,14 @@ import { useImageUpload } from "./useImageUpload.tsx";
 import { useSubmissionErrorHandler } from "./useSubmissionErrorHandler.tsx";
 import {
   CreateCarChild,
-  // UpdateCarChild,
+  UpdateCarChild,
 } from "../services/CarChildServices.tsx";
 import { getLocalStorage } from "../services/TokenServices.tsx";
 
 interface UseFormCarChildProps {
   mode?: "create" | "update";
   initialData?: Partial<CarChildFormData>;
-  carChildId?: string;
+  carChildId?: string | undefined;
 }
 
 export default function useFormCarChild({
@@ -131,12 +131,7 @@ export default function useFormCarChild({
         formData.append("alias", payload.alias.trim());
         formData.append("color", payload.color.trim());
         formData.append("status", payload.status.toString());
-
-        if (mode === "create") {
-          formData.append("car_parent", parent?.id);
-        } else if (mode === "update" && carChildId) {
-          formData.append("id", carChildId);
-        }
+        formData.append("car_parent", parent?.id);
 
         if (payload.description) {
           formData.append("description", payload.description.trim());
@@ -156,13 +151,7 @@ export default function useFormCarChild({
         if (mode === "create") {
           success = await CreateCarChild(formData);
         } else {
-          const data = {
-            name: payload.name,
-            image: imageUpload.mainImage
-          }
-          console.log(data);
-          
-          // success = await UpdateCarChild(formData);
+          success = await UpdateCarChild(carChildId!,formData);
         }
 
         if (success) {

@@ -14,6 +14,7 @@ import SelectField from "../../../ui/SelectField.tsx";
 import useFormCarChild from "../../../../hooks/useFormCarChild.tsx";
 import TinyMCEField from "../../../ui/TextAreaField.tsx";
 import { CarChildFormData } from "../../../../types/form.tsx";
+import { statusInfo } from "../../../../types/data.tsx";
 
 interface FormCarChildProps {
   mode?: "create" | "update";
@@ -109,18 +110,6 @@ export default function FormCarChild({
       },
     ],
     [register, errors.name, errors.alias, errors.color, errors.car_parent]
-  );
-
-  // Memoize status options
-  const statusInfo = useMemo(
-    () => [
-      { id: 1, name: "Active" },
-      { id: 2, name: "Maintenance" },
-      { id: 3, name: "Used By Owner" },
-      { id: 4, name: "Inactive" },
-      { id: 5, name: "Reserved" },
-    ],
-    []
   );
 
   // Memoize button disabled state

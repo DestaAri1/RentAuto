@@ -4,6 +4,10 @@ import useCarChild from "../../../../hooks/useCarChild.tsx";
 import { useEffect } from "react";
 import CarChildStatusBadge from "./CarChildStatusBadge.tsx";
 import CarChildAvailable from "./CarChildAvailable.tsx";
+import useStatusCarChild from "../../../../hooks/carChild/useStatusCarChild.tsx";
+import CarChildStatusModal from "./CarChildStatusModal.tsx";
+import CarChildDeleteModal from "./CarChildDeleteModal.tsx";
+import { CarChild } from "../../../../types/index.tsx";
 
 interface Props {
   route: string;
@@ -12,12 +16,46 @@ interface Props {
 export default function CChildList({ route }: Props) {
   const { slug } = useParams<{ slug: string }>();
   const { fetchCarChild, carChildren, isFetched } = useCarChild();
+  const statusModal = useStatusCarChild();
+  const deleteModal = useStatusCarChild();
 
   useEffect(() => {
     if (slug && !isFetched.current) {
-      fetchCarChild({slug, mode: "all"});
+      fetchCarChild({ slug, mode: "all" });
     }
   }, [slug, fetchCarChild, isFetched]);
+
+  // Handle status update dengan react-hook-form
+  const handleStatusUpdate = async (data: { status: number }) => {
+    try {
+      const result = await statusModal.updateStatus(data);
+
+      if (result?.success) {
+        // Refresh the car list after successful status update
+        if (slug) {
+          fetchCarChild({ slug, mode: "all" });
+          statusModal.openModal.closeModal()
+        }
+
+        // Optional: Show success notification
+        console.log("Status updated successfully");
+      }
+    } catch (error) {
+      console.error("Failed to update status:", error);
+      // Error sudah di-handle di dalam hook
+    }
+  };
+
+  // Handle delete action
+  const handleDelete = async (car: CarChild) => {
+    if (await deleteModal.deleteCarChild(car.id)) {
+      if (slug) {
+        fetchCarChild({ slug, mode: "all" });
+        deleteModal.openModal.closeModal()
+      }
+    }
+  };
+
   return (
     <>
       <Table>
@@ -38,7 +76,7 @@ export default function CChildList({ route }: Props) {
           {carChildren?.length > 0 ? (
             carChildren.map((car, index) => (
               <tr key={car.id}>
-                <Td className="font-medium text-gray-900">{index + 1}</Td>
+                <Td>{index + 1}</Td>
                 <Td>{car.name}</Td>
                 <Td>{car.alias}</Td>
                 <Td>
@@ -49,12 +87,13 @@ export default function CChildList({ route }: Props) {
                   <CarChildAvailable status={car.is_active} />
                 </Td>
                 <Td className="text-right text-sm font-medium">
-                  <Link
-                    to={"/"}
+                  <button
+                    onClick={() => statusModal.openModal.openModal(car)}
                     className="text-yellow-600 hover:text-yellow-900"
+                    disabled={statusModal.isSubmitting}
                   >
-                    VIEW
-                  </Link>
+                    {statusModal.isSubmitting ? "UPDATING..." : "STATUS"}
+                  </button>
                   <Link
                     to={`${route}/${car.slug}`}
                     className="text-blue-600 hover:text-blue-900 ml-4"
@@ -62,7 +101,7 @@ export default function CChildList({ route }: Props) {
                     UPDATE
                   </Link>
                   <button
-                    // onClick={"/"}
+                    onClick={() => deleteModal.openModal.openModal(car)}
                     className="text-red-600 hover:text-red-900 ml-4"
                     type="button"
                   >
@@ -74,7 +113,7 @@ export default function CChildList({ route }: Props) {
           ) : (
             <tr>
               <td
-                colSpan={6}
+                colSpan={7}
                 className="text-center px-6 py-4 text-sm text-gray-500"
               >
                 No cars found.
@@ -83,6 +122,30 @@ export default function CChildList({ route }: Props) {
           )}
         </TableBody>
       </Table>
+
+      {statusModal.openModal.isOpen && statusModal.selectedCar && (
+        <CarChildStatusModal
+          isOpen={statusModal.openModal.isOpen}
+          onClose={statusModal.openModal.closeModal}
+          status={statusModal.selectedCar.status}
+          onSubmit={handleStatusUpdate}
+          register={statusModal.register}
+          handleSubmit={statusModal.handleSubmit}
+          errors={statusModal.errors}
+          watch={statusModal.watch}
+          setValue={statusModal.setValue}
+          selectedCar={statusModal.selectedCar}
+        />
+      )}
+
+      {deleteModal.openModal.isOpen && deleteModal.selectedCar && (
+        <CarChildDeleteModal
+          isOpen={deleteModal.openModal.isOpen}
+          onClose={deleteModal.openModal.closeModal}
+          car={deleteModal.openModal.selectedItem}
+          onSubmit={handleDelete}
+        />
+      )}
     </>
   );
 }

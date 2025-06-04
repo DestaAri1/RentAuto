@@ -18,7 +18,7 @@ const TableHead = ({ children }: TableProps) => {
 
 const Th = ({
   children,
-  className = "text-left text-xs font-medium text-gray-500 uppercase tracking-wider",
+  className = "text-center text-xs font-medium text-gray-500 uppercase tracking-wider",
 }: TableProps) => {
   return (
     <th scope="col" className={`px-4 py-3 ${className}`}>
@@ -33,7 +33,7 @@ const TableBody = ({ children }: TableProps) => {
   );
 };
 
-const Td = ({ children, className = "text-sm text-gray-500", hover = "" }: TableProps) => {
+const Td = ({ children, className = "text-sm text-gray-500 text-center", hover = "" }: TableProps) => {
   return (
     <td className={`px-4 py-4 whitespace-nowrap ${className} ${hover}`}>{children}</td>
   );

@@ -6,6 +6,14 @@ export interface ChildProps {
   children: ReactNode;
 }
 
+export interface ModalProps<T = any> {
+  isOpen: boolean;
+  onClose: () => void;
+  onStatus?: (data: T) => void;
+  onUpdate?: (data: T) => void;
+  onDelete?: (data: T) => void;
+}
+
 // Define user type
 export interface User {
   id: string;

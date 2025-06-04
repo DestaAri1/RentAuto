@@ -55,10 +55,7 @@ export interface AdditionalImageProps {
   ) => void;
   handleAdditionalImagesClick: () => void;
   removeAdditionalImage: (index: number) => void;
-  imageErrors: {
-    mainImage?: string;
-    additionalImages?: string;
-  };
+  imageErrors: ImageError
 }
 
 // Image error interface

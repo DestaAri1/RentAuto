@@ -46,10 +46,7 @@ function UpdateCarChildContent() {
       id: carChild.id, // Car child ID for update
     };
   }, [carChild, parent]);
-
-  console.log(carChild);
   
-
   if (!parent) {
     return null;
   }

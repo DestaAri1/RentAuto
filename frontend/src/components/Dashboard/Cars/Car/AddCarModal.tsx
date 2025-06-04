@@ -5,11 +5,9 @@ import useCarType from "../../../../hooks/useCarType.tsx";
 import { FieldErrors, UseFormRegister } from "react-hook-form";
 import { CarFormData } from "../../../../schema/Schema.tsx";
 import { SubmissionError } from "../../../../types/submission.tsx";
-import { CarType } from "../../../../types/index.tsx";
+import { CarType, ModalProps } from "../../../../types/index.tsx";
 
-export interface CarModalProps {
-  isOpen: boolean;
-  onClose: () => void;
+export interface CarModalProps extends ModalProps {
   // Form props dari parent
   register: UseFormRegister<CarFormData>;
   errors: FieldErrors<CarFormData>;

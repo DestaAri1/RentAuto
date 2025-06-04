@@ -1,11 +1,10 @@
 import React, { useMemo } from "react";
 import { Table, TableBody, TableHead, Td, Th } from "../../../Table.tsx";
-import { Link, useNavigate } from "react-router-dom"; // ✅ Tambah useNavigate
+import { useNavigate } from "react-router-dom";
 import { Cars, CarsProps } from "../../../../types/index.tsx";
 import { DashBoxTitle } from "../../../DashboardComponents.tsx";
 import { Star } from "lucide-react";
 import { usePagination } from "../../../../hooks/usePagination.tsx";
-import { useCarParent } from "../../../../context/CarParentContext.tsx";
 
 interface CarModalProps {
   onUpdate: (car: Cars) => void;

@@ -116,7 +116,7 @@ export const carChildFormSchema = z.object({
   name: nameCCSchema({ field: "name" }),
   alias: nameCCSchema({ field: "alias" }),
   color: nameCCSchema({ field: "color" }),
-  status: z.number().min(0).max(1),
+  status: z.number().min(1).max(5),
   description: z.string().optional(),
   car_parent: z.string().min(1, "Car parent is required"),
   imageUrl: z.string().url().optional(),
