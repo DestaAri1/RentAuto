@@ -14,16 +14,26 @@ import (
 
 type RoleRepository struct {
 	BaseHandler
-	repository models.RoleRepository
-	policy *policy.AdminPolicy
+	repository  models.RoleRepository
+	adminPolicy *policy.AdminPolicy  // Perbaiki nama field
 }
 
 func (h *RoleRepository) GetRoles(ctx *fiber.Ctx) error {
-	context, cancel := context.WithTimeout(context.Background(), time.Duration(5 *time.Second))
+	context, cancel := context.WithTimeout(context.Background(), time.Duration(5*time.Second))
 	defer cancel()
 
-	data, err := h.repository.GetRoles(context)
+	// Get role ID from context (assuming it's set by middleware)
+	roleId, ok := ctx.Locals("roleId").(uuid.UUID)
+	if !ok {
+		return h.handlerError(ctx, fiber.StatusUnauthorized, "Role ID not found in context")
+	}
 
+	// Check permission untuk melihat roles (hanya admin)
+	if err := h.adminPolicy.CanManageRoles(context, roleId); err != nil {
+		return h.handlerError(ctx, fiber.StatusForbidden, "You don't have permission to view roles")
+	}
+
+	data, err := h.repository.GetRoles(context)
 	if err != nil {
 		return h.handlerError(ctx, fiber.StatusBadGateway, err.Error())
 	}
@@ -32,7 +42,7 @@ func (h *RoleRepository) GetRoles(ctx *fiber.Ctx) error {
 }
 
 func (h *RoleRepository) CreateRole(ctx *fiber.Ctx) error {
-	context, cancel := context.WithTimeout(context.Background(), time.Duration(5 *time.Second))
+	context, cancel := context.WithTimeout(context.Background(), time.Duration(5*time.Second))
 	defer cancel()
 
 	// Get role ID from context (assuming it's set by middleware)
@@ -41,8 +51,9 @@ func (h *RoleRepository) CreateRole(ctx *fiber.Ctx) error {
 		return h.handlerError(ctx, fiber.StatusUnauthorized, "Role ID not found in context")
 	}
 
-	if err := h.policy.CanManageRoles(context, roleId); err != nil {
-		return h.handlerError(ctx, fiber.StatusForbidden, "You don't have permission to create cars")
+	// Check permission untuk manage roles (hanya admin)
+	if err := h.adminPolicy.CanManageRoles(context, roleId); err != nil {
+		return h.handlerError(ctx, fiber.StatusForbidden, "You don't have permission to create roles")
 	}
 
 	formData := &models.FormRole{}
@@ -51,21 +62,21 @@ func (h *RoleRepository) CreateRole(ctx *fiber.Ctx) error {
 	}
 
 	if err := validator.New().Struct(formData); err != nil {
-		carValidator := validators.NewRoleValidator()
-		return h.handleValidationError(ctx, err, &carValidator)
+		roleValidator := validators.NewRoleValidator()  // Perbaiki nama validator
+		return h.handleValidationError(ctx, err, &roleValidator)
 	}
 
-	// Fixed: Call repository method and check for error
+	// Call repository method and check for error
 	err := h.repository.CreateRole(context, formData)
 	if err != nil {
 		return h.handlerError(ctx, fiber.StatusBadRequest, err.Error())
 	}
 
-	return h.handlerSuccess(ctx, fiber.StatusOK, "Successfully create data", nil)
+	return h.handlerSuccess(ctx, fiber.StatusCreated, "Successfully created role", nil)
 }
 
 func (h *RoleRepository) UpdateRole(ctx *fiber.Ctx) error {
-	context, cancel := context.WithTimeout(context.Background(), time.Duration(5 *time.Second))
+	context, cancel := context.WithTimeout(context.Background(), time.Duration(5*time.Second))
 	defer cancel()
 
 	// Get role ID from context (assuming it's set by middleware)
@@ -74,14 +85,16 @@ func (h *RoleRepository) UpdateRole(ctx *fiber.Ctx) error {
 		return h.handlerError(ctx, fiber.StatusUnauthorized, "Role ID not found in context")
 	}
 
-	roleIdParam := ctx.Params("roleId")
-	roleIdFix, err := uuid.Parse(roleIdParam)
-	if err != nil {
-		return h.handlerError(ctx, fiber.StatusBadRequest, "Invalid car ID format")
+	// Check permission untuk manage roles (hanya admin)
+	if err := h.adminPolicy.CanManageRoles(context, roleId); err != nil {
+		return h.handlerError(ctx, fiber.StatusForbidden, "You don't have permission to update roles")
 	}
 
-	if err := h.policy.CanManageRoles(context, roleId); err != nil {
-		return h.handlerError(ctx, fiber.StatusForbidden, "You don't have permission to create cars")
+	// Parse role ID from params
+	roleIdParam := ctx.Params("roleId")
+	roleIdToUpdate, err := uuid.Parse(roleIdParam)
+	if err != nil {
+		return h.handlerError(ctx, fiber.StatusBadRequest, "Invalid role ID format")
 	}
 
 	formData := &models.FormRole{}
@@ -90,21 +103,21 @@ func (h *RoleRepository) UpdateRole(ctx *fiber.Ctx) error {
 	}
 
 	if err := validator.New().Struct(formData); err != nil {
-		carValidator := validators.NewRoleValidator()
-		return h.handleValidationError(ctx, err, &carValidator)
+		roleValidator := validators.NewRoleValidator()
+		return h.handleValidationError(ctx, err, &roleValidator)
 	}
 
-	// Fixed: Call repository method and check for error
-	err = h.repository.UpdateRole(context, formData, roleIdFix)
+	// Call repository method and check for error
+	err = h.repository.UpdateRole(context, formData, roleIdToUpdate)
 	if err != nil {
 		return h.handlerError(ctx, fiber.StatusBadRequest, err.Error())
 	}
 
-	return h.handlerSuccess(ctx, fiber.StatusOK, "Successfully create data", nil)
+	return h.handlerSuccess(ctx, fiber.StatusOK, "Successfully updated role", nil)
 }
 
 func (h *RoleRepository) DeleteRole(ctx *fiber.Ctx) error {
-	context, cancel := context.WithTimeout(context.Background(), time.Duration(5 *time.Second))
+	context, cancel := context.WithTimeout(context.Background(), time.Duration(5*time.Second))
 	defer cancel()
 
 	// Get role ID from context (assuming it's set by middleware)
@@ -113,26 +126,30 @@ func (h *RoleRepository) DeleteRole(ctx *fiber.Ctx) error {
 		return h.handlerError(ctx, fiber.StatusUnauthorized, "Role ID not found in context")
 	}
 
-	if err := h.policy.CanManageRoles(context, roleId); err != nil {
-		return h.handlerError(ctx, fiber.StatusForbidden, "You don't have permission to create cars")
+	// Check permission untuk manage roles (hanya admin)
+	if err := h.adminPolicy.CanManageRoles(context, roleId); err != nil {
+		return h.handlerError(ctx, fiber.StatusForbidden, "You don't have permission to delete roles")
 	}
 
+	// Parse role ID from params
 	roleIdParam := ctx.Params("roleId")
-	roleIdFix, err := uuid.Parse(roleIdParam)
+	roleIdToDelete, err := uuid.Parse(roleIdParam)
 	if err != nil {
-		return h.handlerError(ctx, fiber.StatusBadRequest, "Invalid car ID format")
+		return h.handlerError(ctx, fiber.StatusBadRequest, "Invalid role ID format")
 	}
 
-	if err := h.repository.DeleteRole(context, roleIdFix); err != nil {
+	if err := h.repository.DeleteRole(context, roleIdToDelete); err != nil {
 		return h.handlerError(ctx, fiber.StatusBadGateway, err.Error())
 	}
 
-	return h.handlerSuccess(ctx, fiber.StatusOK, "success", nil)
+	return h.handlerSuccess(ctx, fiber.StatusOK, "Successfully deleted role", nil)
 }
 
-func NewRoleHandler(router fiber.Router, repository models.RoleRepository) {
+// Constructor yang diperbaiki
+func NewRoleHandler(router fiber.Router, repository models.RoleRepository, adminPolicy *policy.AdminPolicy) {
 	handler := &RoleRepository{
-		repository: repository,
+		repository:  repository,
+		adminPolicy: adminPolicy,  // Inject AdminPolicy
 	}
 
 	router.Get("/", handler.GetRoles)

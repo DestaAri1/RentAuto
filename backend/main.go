@@ -7,6 +7,7 @@ import (
 	"github.com/DestaAri1/RentAuto/handlers"
 	"github.com/DestaAri1/RentAuto/middlewares"
 	"github.com/DestaAri1/RentAuto/models"
+	"github.com/DestaAri1/RentAuto/policy"
 	"github.com/DestaAri1/RentAuto/repositories"
 	"github.com/DestaAri1/RentAuto/services"
 	"github.com/DestaAri1/RentAuto/validatiors"
@@ -39,6 +40,7 @@ type AppRepositories struct {
 	carChild models.CarChildRepository
 	roles    models.RoleRepository
 	carTypes models.CarTypesRepository
+	// users    models.UserRepository // Tambahkan ini jika belum ada
 }
 
 func setupRepositories(database *gorm.DB) AppRepositories {
@@ -48,6 +50,7 @@ func setupRepositories(database *gorm.DB) AppRepositories {
 		carChild: repository.NewCarChildRepository(database),
 		roles:    repository.NewRoleRepository(database),
 		carTypes: repository.NewCarTypeRepositories(database),
+		// users:    repository.NewUserRepository(database), // Sesuaikan dengan nama constructor Anda
 	}
 }
 
@@ -62,13 +65,30 @@ func setupServices(repos AppRepositories) AppServices {
 	}
 }
 
+// Policy initialization
+type AppPolicies struct {
+	admin *policy.AdminPolicy
+}
+
+func setupPolicies(repos AppRepositories) AppPolicies {
+	// Setup base policy
+	basePolicy := policy.NewPolicy(repos.roles) // Sesuaikan dengan constructor Policy Anda
+	
+	// Setup admin policy
+	adminPolicy := policy.NewAdminPolicy(basePolicy)
+
+	return AppPolicies{
+		admin: adminPolicy,
+	}
+}
+
 // Validator initialization
 func setupValidator(database *gorm.DB) *validators.ValidatorManager {
 	return validators.NewValidatorManager(database)
 }
 
 // Route setup
-func setupRoutes(app *fiber.App, database *gorm.DB, repos AppRepositories, services AppServices, validatorManager *validators.ValidatorManager) {
+func setupRoutes(app *fiber.App, database *gorm.DB, repos AppRepositories, services AppServices, policies AppPolicies, validatorManager *validators.ValidatorManager) {
 	// API group
 	api := app.Group("/api")
 
@@ -85,6 +105,7 @@ func setupRoutes(app *fiber.App, database *gorm.DB, repos AppRepositories, servi
 	//  User routes
 	//
 	//  Admin routes
+	handlers.NewRoleHandler(protected.Group("/admin/role"), repos.roles, policies.admin)
 	handlers.NewCarHandler(protected.Group("/admin/cars"), repos.cars, repos.roles)
 	handlers.NewCarTypesHandler(protected.Group("/admin/car-types"), repos.carTypes, repos.roles, validatorManager)
 	handlers.NewCarChildHandler(protected.Group("/admin/cars/children"), repos.carChild, repos.roles)
@@ -98,10 +119,11 @@ func main() {
 	app := setupApp()
 	repositories := setupRepositories(database)
 	services := setupServices(repositories)
+	policies := setupPolicies(repositories) // Setup policies
 	validatorManager := setupValidator(database)
 
 	// Setup routes
-	setupRoutes(app, database, repositories, services, validatorManager)
+	setupRoutes(app, database, repositories, services, policies, validatorManager)
 
 	// Start server with more informative logging
 	log.Println("Server starting on http://localhost:3000")

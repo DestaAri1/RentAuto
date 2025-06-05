@@ -9,9 +9,6 @@ import (
 func GenerateJWT(claims jwt.MapClaims, signingMethod jwt.SigningMethod, secret string) (string, error) {
 	token := jwt.NewWithClaims(signingMethod, claims)
 
-	// Print token header for debugging
-	fmt.Printf("JWT Generation - Token header: %+v\n", token.Header)
-
 	// Sign the token
 	tokenString, err := token.SignedString([]byte(secret))
 	if err != nil {

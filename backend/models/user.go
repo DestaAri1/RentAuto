@@ -13,7 +13,7 @@ type User struct {
 	Email     string         `json:"email" gorm:"unique;not null"`
 	Password  string         `json:"-"`
 	RoleID    uuid.UUID      `json:"role_id" gorm:"not null"`
-	Role      Role           `json:"role" gorm:"foreignKey:RoleID;references:ID"`
+	Role      Role           `json:"role" gorm:"foreignKey:RoleID;references:ID;onDelete:cascade"`
 	CreatedAt time.Time      `json:"created_at"`
 	UpdatedAt time.Time      `json:"updated_at"`
 	DeletedAt gorm.DeletedAt `json:"deleted_at" gorm:"index"`

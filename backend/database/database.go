@@ -65,6 +65,11 @@ func seedData(db *gorm.DB) {
 		log.Fatalf("Failed to find role: %v", err)
 	}
 
+	var userRole models.Role
+	if err := db.First(&userRole, "name = ?", "User").Error; err != nil {
+		log.Fatalf("Failed to find role: %v", err)
+	}
+
 	// 3. SEED USER
 	users := []models.User{
 		{
@@ -73,6 +78,13 @@ func seedData(db *gorm.DB) {
 			Email:    "admin@gmail.com",
 			Password: hashPassword("12345678"),
 			RoleID:   adminRole.ID,
+		},
+		{
+			ID:       uuid.New(),
+			Name:     "User Auto Rent",
+			Email:    "user@gmail.com",
+			Password: hashPassword("12345678"),
+			RoleID:   userRole.ID,
 		},
 	}
 

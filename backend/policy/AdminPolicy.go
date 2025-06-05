@@ -26,7 +26,7 @@ func (p *AdminPolicy) IsAdmin(ctx context.Context, roleId uuid.UUID) (bool, erro
 	}
 
 	// Find the role by ID
-	var targetRole *models.Role
+	var targetRole *models.RoleResponse
 	for _, role := range roles {
 		if role.ID == roleId {
 			targetRole = role

@@ -3,6 +3,7 @@ package policy
 import (
 	"context"
 	"errors"
+	"fmt"
 	"strings"
 
 	"github.com/DestaAri1/RentAuto/models"
@@ -32,13 +33,15 @@ func (p *Policy) CheckPermission(ctx context.Context, roleId uuid.UUID, required
 	}
 
 	// Find the role by ID
-	var targetRole *models.Role
+	var targetRole *models.RoleResponse
 	for _, role := range roles {
 		if role.ID == roleId {
 			targetRole = role
 			break
 		}
 	}
+
+	fmt.Println(targetRole)
 
 	if targetRole == nil {
 		return ErrRoleNotFound

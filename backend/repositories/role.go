@@ -12,15 +12,25 @@ type RoleRepository struct {
 	db *gorm.DB
 }
 
-func (r *RoleRepository) GetRoles(ctx context.Context) ([]*models.Role, error) {
+func (r *RoleRepository) GetRoles(ctx context.Context) ([]*models.RoleResponse, error) {
 	roles := []*models.Role{}
 	
 	res := r.db.Model(&models.Role{}).Where("deleted_at IS NULL").Find(&roles)
 	if res.Error != nil {
 		return nil, res.Error
 	}
+
+	roleResponses := []*models.RoleResponse{}
+	for _, role := range roles {
+		response := &models.RoleResponse{
+			ID: role.ID,
+			Name: role.Name,
+			Permission: role.Permission,
+		}
+		roleResponses = append(roleResponses, response)
+	}
 	
-	return roles, nil
+	return roleResponses, nil
 }
 
 func (r *RoleRepository) CreateRole(ctx context.Context, formData *models.FormRole) error {

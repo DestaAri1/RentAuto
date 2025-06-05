@@ -22,8 +22,14 @@ type FormRole struct {
 	Permission []string `json:"permission" validate:"required,dive,required"`
 }
 
+type RoleResponse struct {
+	ID         uuid.UUID      `json:"id"`
+	Name       string         `json:"name"`
+	Permission []string       `json:"permission"`
+}
+
 type RoleRepository interface {
-	GetRoles(ctx context.Context) ([]*Role, error)
+	GetRoles(ctx context.Context) ([]*RoleResponse, error)
 	CreateRole(ctx context.Context, formData *FormRole) error
 	UpdateRole(ctx context.Context, formData *FormRole, roleId uuid.UUID) error
 	DeleteRole(ctx context.Context, roleId uuid.UUID) error
