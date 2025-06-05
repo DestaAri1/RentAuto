@@ -1,7 +1,6 @@
 import React from "react";
 import { SideNavHeader } from "../../DashboardComponents.tsx";
 import Title from "./SideNav/Title.tsx";
-import Dekstop from "./SideNav/Dekstop.tsx";
 import {
   BarChart,
   Calendar,
@@ -10,10 +9,13 @@ import {
   HelpCircle,
   Map,
   Settings,
+  User,
+  Users,
+  Shield,
 } from "lucide-react";
 import Mobile from "./SideNav/Mobile.tsx";
 import { SideBarProps } from "../../../types/index.tsx";
-import User from "./User.tsx";
+import Desktop from "./SideNav/Dekstop.tsx";
 
 export default function SideNav({ sidebarOpen, setSidebarOpen }: SideBarProps) {
   const navItem = [
@@ -22,9 +24,19 @@ export default function SideNav({ sidebarOpen, setSidebarOpen }: SideBarProps) {
     { title: "Bookings", href: "/dashboard/bookings", icon: Calendar },
     { title: "Locations", href: "/locations", icon: Map },
     { title: "Invoices", href: "/invoices", icon: FileText },
+    {
+      title: "User Management",
+      icon: User,
+      isDropdown: true,
+      subItems: [
+        { title: "Users", href: "/dashboard/users", icon: Users },
+        { title: "Roles", href: "/dashboard/roles", icon: Shield },
+      ],
+    },
     { title: "Settings", href: "/settings", icon: Settings },
     { title: "Help & Support", href: "/help", icon: HelpCircle },
   ];
+
   return (
     <>
       {sidebarOpen && (
@@ -36,8 +48,7 @@ export default function SideNav({ sidebarOpen, setSidebarOpen }: SideBarProps) {
       )}
       <SideNavHeader>
         <Title />
-        <Dekstop navItem={navItem} />
-        <User/>
+        <Desktop navItem={navItem} />
       </SideNavHeader>
     </>
   );

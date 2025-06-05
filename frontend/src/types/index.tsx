@@ -92,8 +92,10 @@ interface Testimonials {
 
 interface NavItem {
   title: string;
-  href: string;
+  href?: string;
   icon: LucideIcon;
+  isDropdown?: boolean;
+  subItems?: NavSubItem[];
 }
 
 export interface NavItemProps {
@@ -103,6 +105,12 @@ export interface NavItemProps {
 export interface SideBarProps {
   sidebarOpen?: boolean;
   setSidebarOpen: (value: boolean) => void;
+}
+
+export interface NavSubItem {
+  title: string;
+  href: string;
+  icon: LucideIcon;
 }
 
 interface Crumb {
