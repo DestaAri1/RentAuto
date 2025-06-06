@@ -1,9 +1,8 @@
-import React from 'react'
-import { Link } from 'react-router-dom';
-import { useAuth } from '../../../context/AuthContext.tsx';
+import { Link } from "react-router-dom";
+import { useAuth } from "../../../context/AuthContext.tsx";
 
-export default function User() {
-  const {user} = useAuth()
+export default function UserProfile() {
+  const { user } = useAuth();
   return (
     <div className="flex-shrink-0 flex border-t border-gray-200 p-4">
       <Link to="#" className="flex-shrink-0 w-full group block">

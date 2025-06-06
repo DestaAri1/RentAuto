@@ -16,6 +16,7 @@ import {
 import Mobile from "./SideNav/Mobile.tsx";
 import { SideBarProps } from "../../../types/index.tsx";
 import Desktop from "./SideNav/Dekstop.tsx";
+import UserProfile from "./User.tsx"
 
 export default function SideNav({ sidebarOpen, setSidebarOpen }: SideBarProps) {
   const navItem = [
@@ -49,6 +50,7 @@ export default function SideNav({ sidebarOpen, setSidebarOpen }: SideBarProps) {
       <SideNavHeader>
         <Title />
         <Desktop navItem={navItem} />
+        <UserProfile/>
       </SideNavHeader>
     </>
   );

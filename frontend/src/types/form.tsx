@@ -1,6 +1,7 @@
 import { ReactNode } from "react";
 import { ImageItem } from "../hooks/useImageUpload";
 import { FieldError } from "react-hook-form";
+import { string } from "zod";
 
 export interface BaseInputField {
   label: string;
@@ -55,7 +56,7 @@ export interface AdditionalImageProps {
   ) => void;
   handleAdditionalImagesClick: () => void;
   removeAdditionalImage: (index: number) => void;
-  imageErrors: ImageError
+  imageErrors: ImageError;
 }
 
 // Image error interface
@@ -89,4 +90,9 @@ export interface CarChildData extends CarChildFormData {
   createdAt?: string;
   updatedAt?: string;
   slug?: string;
+}
+
+export interface RoleForm {
+  name: string;
+  permission: string[];
 }

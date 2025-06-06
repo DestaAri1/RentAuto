@@ -26,6 +26,7 @@ export interface User {
 export interface Role {
   id: number;
   name: string;
+  permission: string[]
 }
 
 // Define the context state type

@@ -12,6 +12,7 @@ import Bookings from "./pages/Dashboard/Bookings.tsx";
 import CarChild from "./pages/Dashboard/CarChild.tsx";
 import AddCarChild from "./pages/Dashboard/CarChild/AddCarChild.tsx";
 import UpdateCarChild from "./pages/Dashboard/CarChild/UpdateCarChild.tsx";
+import RoleIndex from "./pages/Dashboard/RoleIndex.tsx";
 
 function App() {
   return (
@@ -81,6 +82,14 @@ function App() {
             element={
               <ProtectedRoute>
                 <Bookings />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/dashboard/roles"
+            element={
+              <ProtectedRoute>
+                <RoleIndex />
               </ProtectedRoute>
             }
           />

@@ -123,3 +123,13 @@ export const carChildFormSchema = z.object({
 });
 
 export type CarChildFormData = z.infer<typeof carChildFormSchema>;
+
+// Updated roleFormSchema to include permissions
+export const roleFormSchema = z.object({
+  name: nameCCSchema({ field: "name" }),
+  permissions: z
+    .array(z.string())
+    .min(1, "At least one permission is required"),
+});
+
+export type RoleFormData = z.infer<typeof roleFormSchema>;
