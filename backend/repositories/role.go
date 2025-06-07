@@ -2,6 +2,7 @@ package repository
 
 import (
 	"context"
+	"encoding/json"
 
 	"github.com/DestaAri1/RentAuto/models"
 	"github.com/google/uuid"
@@ -15,7 +16,7 @@ type RoleRepository struct {
 func (r *RoleRepository) GetRoles(ctx context.Context) ([]*models.RoleResponse, error) {
 	roles := []*models.Role{}
 	
-	res := r.db.Model(&models.Role{}).Where("deleted_at IS NULL").Find(&roles)
+	res := r.db.Find(&roles)
 	if res.Error != nil {
 		return nil, res.Error
 	}
@@ -51,10 +52,17 @@ func (r *RoleRepository) CreateRole(ctx context.Context, formData *models.FormRo
 
 func (r *RoleRepository) UpdateRole(ctx context.Context, formData *models.FormRole, roleId uuid.UUID) error {
 	tx := r.db.Begin()
-	
+
+	// Konversi slice ke JSON string
+	permissionJSON, err := json.Marshal(formData.Permission)
+	if err != nil {
+		tx.Rollback()
+		return err
+	}
+
 	updates := map[string]interface{}{
 		"name":       formData.Name,
-		"permission": formData.Permission,
+		"permission": string(permissionJSON), // simpan sebagai string JSON
 	}
 
 	if res := tx.Model(&models.Role{}).Where("id = ?", roleId).Updates(updates); res.Error != nil {
@@ -65,6 +73,7 @@ func (r *RoleRepository) UpdateRole(ctx context.Context, formData *models.FormRo
 	tx.Commit()
 	return nil
 }
+
 
 func (r *RoleRepository) DeleteRole(ctx context.Context, roleId uuid.UUID) error {
 	tx := r.db.Begin()
