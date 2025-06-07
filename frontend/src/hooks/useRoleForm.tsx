@@ -172,7 +172,6 @@ export default function useRoleForm(
       await DeleteRole(roleId);
       await handleSuccess();
     } catch (error: any) {
-      console.error("💥 Delete error:", error);
       handleSubmissionError(error);
       handleError(error);
     }

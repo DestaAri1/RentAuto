@@ -8,8 +8,6 @@ export const useSubmissionErrorHandler = <T extends FieldValues>(
   const [submissionErrors, setSubmissionErrors] = useState<SubmissionError>({});
 
   const handleSubmissionError = (error: any) => {
-    console.error("Submission Error:", error);
-
     if (
       error.name === "NetworkError" ||
       error.message?.includes("fetch") ||
