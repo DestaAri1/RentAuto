@@ -1,12 +1,13 @@
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useState, useCallback, useEffect, useMemo } from "react";
+import { useCallback, useEffect, useMemo } from "react";
 import { RoleFormData, roleFormSchema } from "../schema/Schema.tsx";
 import {
   CreateRole,
   DeleteRole,
   UpdateRole,
 } from "../services/RoleServices.tsx";
+import { useSubmissionErrorHandler } from "../hooks/useSubmissionErrorHandler.tsx";
 
 interface UseRoleFormProps {
   onSuccess?: () => Promise<void> | void;
@@ -26,11 +27,7 @@ interface UseRoleFormReturn {
   formState: any;
   setPermissions: (permissions: string[]) => void;
   watchedValues: RoleFormData;
-  submissionErrors: {
-    general?: string;
-    network?: string;
-    validation?: string;
-  };
+  submissionErrors: any;
   resetAllErrors: () => void;
   reset: () => void;
 }
@@ -47,18 +44,11 @@ export default function useRoleForm(
     isDelete = false,
   } = props;
 
-  const [submissionErrors, setSubmissionErrors] = useState<{
-    general?: string;
-    network?: string;
-    validation?: string;
-  }>({});
-
   // Helper function untuk memproses permissions
   const processPermissions = useCallback(
     (permissions: string[] | string): string[] => {
       if (!permissions) return [];
 
-      // Jika permissions adalah string (JSON), parse terlebih dahulu
       if (typeof permissions === "string") {
         try {
           return JSON.parse(permissions);
@@ -68,7 +58,6 @@ export default function useRoleForm(
         }
       }
 
-      // Jika sudah array, return langsung
       if (Array.isArray(permissions)) {
         return permissions;
       }
@@ -78,14 +67,25 @@ export default function useRoleForm(
     []
   );
 
-  // Memoize default values dengan penanganan permissions yang lebih baik
-  const defaultValues = useMemo(
-    () => ({
+  // Default values
+  const defaultValues = useMemo(() => {
+    if (isDelete) {
+      return {
+        name: "",
+        permission: [],
+      };
+    }
+
+    return {
       name: initialData?.name || "",
-      permission: processPermissions(initialData?.permissions || []), // Gunakan 'permission' sesuai schema
-    }),
-    [initialData?.name, initialData?.permissions, processPermissions]
-  );
+      permission: processPermissions(initialData?.permissions || []),
+    };
+  }, [
+    initialData?.name,
+    initialData?.permissions,
+    processPermissions,
+    isDelete,
+  ]);
 
   const {
     register,
@@ -96,47 +96,50 @@ export default function useRoleForm(
     reset,
     clearErrors,
     trigger,
+    setError,
   } = useForm<RoleFormData>({
-    resolver: zodResolver(roleFormSchema), // Tambahkan Zod resolver
+    resolver: isDelete ? undefined : zodResolver(roleFormSchema),
     defaultValues,
-    mode: "onChange", // Validasi real-time
+    mode: isDelete ? "onSubmit" : "onChange",
   });
+
+  // Gunakan submission error handler
+  const { submissionErrors, handleSubmissionError, resetSubmissionErrors } =
+    useSubmissionErrorHandler(setError);
 
   const watchedValues = watch();
 
   // Reset form ketika initialData berubah (untuk update mode)
   useEffect(() => {
-    if (isUpdate && initialData) {
+    if (isUpdate && initialData && !isDelete) {
       const processedPermissions = processPermissions(
         initialData.permissions || []
       );
 
-      // Reset dengan data yang benar
       reset({
         name: initialData.name || "",
         permission: processedPermissions,
       });
     }
-  }, [isUpdate, initialData, reset, processPermissions]);
+  }, [isUpdate, initialData, reset, processPermissions, isDelete]);
 
-  // Memoized setPermissions dengan validasi trigger
   const setPermissions = useCallback(
     (permissions: string[]) => {
+      if (isDelete) return;
+
       setValue("permission", permissions, {
         shouldValidate: true,
         shouldDirty: true,
       });
-      // Trigger validasi manual untuk memastikan form state ter-update
       trigger("permission");
     },
-    [setValue, trigger]
+    [setValue, trigger, isDelete]
   );
 
-  // Memoized resetAllErrors
   const resetAllErrors = useCallback(() => {
-    setSubmissionErrors({});
+    resetSubmissionErrors();
     clearErrors();
-  }, [clearErrors]);
+  }, [resetSubmissionErrors, clearErrors]);
 
   // Success handler
   const handleSuccess = useCallback(async () => {
@@ -155,67 +158,83 @@ export default function useRoleForm(
     [onError]
   );
 
-  // Form submission handler
-  const onSubmit = useCallback(
+  // Delete operation handler
+  const handleDeleteSubmit = useCallback(async () => {
+    if (!roleId) {
+      const error = new Error("Role ID is required for delete operation");
+      handleSubmissionError(error);
+      handleError(error);
+      return;
+    }
+
+    try {
+      resetSubmissionErrors();
+      await DeleteRole(roleId);
+      await handleSuccess();
+    } catch (error: any) {
+      console.error("💥 Delete error:", error);
+      handleSubmissionError(error);
+      handleError(error);
+    }
+  }, [
+    roleId,
+    handleSuccess,
+    handleError,
+    handleSubmissionError,
+    resetSubmissionErrors,
+  ]);
+
+  // Form submission handler untuk create/update
+  const handleFormSubmit = useCallback(
     handleSubmit(async (data: RoleFormData) => {
       try {
-        setSubmissionErrors({});
+        resetSubmissionErrors();
 
         // Validasi manual sebelum submit
         const isValid = await trigger();
         if (!isValid) {
-          console.log("Form validation failed");
           return;
         }
 
-        if (isDelete && roleId) {
-          await DeleteRole(roleId);
-        } else if (isUpdate && roleId) {
+        if (isUpdate && roleId) {
           await UpdateRole(roleId, data);
         } else {
           await CreateRole(data);
         }
 
-        // Call success callback
         await handleSuccess();
       } catch (error: any) {
-        console.error("Form submission error:", error);
-
-        // Handle different types of errors
-        if (error.response?.status === 422) {
-          setSubmissionErrors({
-            validation: error.response.data.message || "Validation failed",
-          });
-        } else if (error.code === "NETWORK_ERROR") {
-          setSubmissionErrors({
-            network: "Network error. Please check your connection.",
-          });
-        } else {
-          setSubmissionErrors({
-            general: error.message || "An unexpected error occurred",
-          });
-        }
-
-        // Call error callback
+        console.error("💥 Form submission error:", error);
+        handleSubmissionError(error);
         handleError(error);
       }
     }),
     [
       handleSubmit,
       isUpdate,
-      isDelete,
       roleId,
       handleSuccess,
       handleError,
       trigger,
+      handleSubmissionError,
+      resetSubmissionErrors,
     ]
   );
+
+  // Tentukan onSubmit function berdasarkan operation type
+  const onSubmit = useMemo(() => {
+    if (isDelete) {
+      return handleDeleteSubmit;
+    } else {
+      return handleFormSubmit;
+    }
+  }, [isDelete, handleDeleteSubmit, handleFormSubmit]);
 
   // Reset function
   const resetForm = useCallback(() => {
     reset(defaultValues);
-    setSubmissionErrors({});
-  }, [reset, defaultValues]);
+    resetSubmissionErrors();
+  }, [reset, defaultValues, resetSubmissionErrors]);
 
   return {
     register,

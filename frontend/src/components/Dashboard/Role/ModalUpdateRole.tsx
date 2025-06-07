@@ -12,7 +12,6 @@ interface UpdateRoleModalProps extends ModalProps, BaseForm {
   errors: FieldErrors<RoleFormData>;
   setPermission: (permission: string[]) => void;
   watchedValues: RoleFormData;
-  roleId?: string;
   initialData?: any;
 }
 
@@ -31,7 +30,6 @@ export default function ModalUpdateRole({
   initialData,
 }: UpdateRoleModalProps) {
   const [selectedPermission, setSelectedPermission] = useState<string[]>([]);
-  const [isInitialized, setIsInitialized] = useState(false);
 
   // Memoize initial permission dengan pengecekan yang lebih robust
   const initialPermission = useMemo(() => {
@@ -70,8 +68,6 @@ export default function ModalUpdateRole({
 
       // Set permission di form
       setPermission(initialPermission);
-
-      setIsInitialized(true);
     }
   }, [isOpen, initialData, initialPermission, setPermission]);
 
@@ -79,7 +75,6 @@ export default function ModalUpdateRole({
   useEffect(() => {
     if (!isOpen) {
       setSelectedPermission([]);
-      setIsInitialized(false);
     }
   }, [isOpen]);
 

@@ -6,6 +6,7 @@ import useModal from "../../hooks/useModal.tsx";
 import ModalAddRole from "../../components/Dashboard/Role/ModalAddRole.tsx";
 import useRoleForm from "../../hooks/useRoleForm.tsx";
 import ModalUpdateRole from "../../components/Dashboard/Role/ModalUpdateRole.tsx";
+import ModalDeleteRole from "../../components/Dashboard/Role/ModalDeleteRole.tsx";
 
 function RoleContent({
   createModal,
@@ -72,12 +73,23 @@ function RoleContent({
     await handleFetchRole();
   }, [updateModal, handleFetchRole]);
 
+  const handleDeleteSuccess = useCallback(async () => {
+    deleteModal.closeModal();
+    setSelectedRole(null);
+    await handleFetchRole();
+  }, [deleteModal, handleFetchRole]);
+
   const handleCreateError = useCallback((error: any) => {
     console.error("Failed to create role:", error);
   }, []);
 
   const handleUpdateError = useCallback((error: any) => {
     console.error("Failed to update role:", error);
+  }, []);
+
+  const handleDeleteError = useCallback((error: any) => {
+    console.error("Failed to delete role:", error);
+    // Tambahkan notifikasi error ke user jika perlu
   }, []);
 
   // Create role form
@@ -98,8 +110,8 @@ function RoleContent({
   const deleteRole = useRoleForm({
     isDelete: true,
     roleId: selectedRole?.id,
-    onSuccess: handleUpdateSuccess,
-    onError: handleUpdateError,
+    onSuccess: handleDeleteSuccess, // Ganti dari handleUpdateSuccess
+    onError: handleDeleteError, // Ganti dari handleUpdateError
   });
 
   const handleUpdateRole = useCallback(
@@ -108,6 +120,14 @@ function RoleContent({
       updateModal.openModal();
     },
     [updateModal]
+  );
+
+  const handleDeleteRole = useCallback(
+    (roleData: any) => {
+      setSelectedRole(roleData);
+      deleteModal.openModal();
+    },
+    [deleteModal]
   );
 
   const handleCloseAddModal = useCallback(() => {
@@ -122,6 +142,12 @@ function RoleContent({
     updateRole.reset(); // Reset form terlebih dahulu
     updateRole.resetAllErrors?.(); // Kemudian reset errors
   }, [updateModal, updateRole]);
+
+  const handleCloseDeleteModal = useCallback(() => {
+    deleteModal.closeModal();
+    deleteRole.reset();
+    deleteRole.resetAllErrors?.();
+  }, [deleteModal, deleteRole]);
 
   if (!role) return null;
 
@@ -144,7 +170,11 @@ function RoleContent({
       }
     >
       <div className="max-w-7xl mx-auto px-4 sm:px-6 md:px-8">
-        <RoleTable role={role} onUpdate={handleUpdateRole} />
+        <RoleTable
+          role={role}
+          onUpdate={handleUpdateRole}
+          onDelete={handleDeleteRole}
+        />
       </div>
 
       {/* Add Role Modal */}
@@ -179,6 +209,15 @@ function RoleContent({
           submissionErrors={updateRole.submissionErrors}
           resetAllErrors={updateRole.resetAllErrors}
           initialData={selectedRole}
+        />
+      )}
+
+      {deleteModal.isOpen && (
+        <ModalDeleteRole
+          isOpen={deleteModal.isOpen}
+          onClose={handleCloseDeleteModal}
+          data={selectedRole}
+          onSubmit={deleteRole.onSubmit}
         />
       )}
     </DashboardLayout>
