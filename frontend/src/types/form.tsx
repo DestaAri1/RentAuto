@@ -1,7 +1,6 @@
 import { ReactNode } from "react";
 import { ImageItem } from "../hooks/useImageUpload";
 import { FieldError } from "react-hook-form";
-import { string } from "zod";
 
 export interface BaseInputField {
   label: string;
@@ -32,7 +31,7 @@ export interface BaseForm {
   handleSubmit?: (e: React.FormEvent<HTMLFormElement>) => void;
   isSubmitting: boolean;
   isValid: boolean;
-  isDirty: boolean;
+  isDirty?: boolean;
   submissionErrors: {
     general?: string;
     network?: string;

@@ -1,3 +1,4 @@
+import { RoleFormData } from "../schema/Schema.tsx";
 import apiClient from "./BaseServices.tsx";
 
 export const GetAllRole = async () => {
@@ -5,7 +6,7 @@ export const GetAllRole = async () => {
   return response;
 };
 
-export const CreateRole = async (data: FormData) => {
+export const CreateRole = async (data: RoleFormData) => {
   try {
     const response = await apiClient.post("/admin/role", data);
     return response;

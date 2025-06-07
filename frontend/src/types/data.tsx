@@ -1,4 +1,4 @@
-import { PermissionData } from "../components/ui/SelectPermission";
+import { PermissionData } from "../components/ui/SelectPermission.tsx";
 
 export const statusInfo = [
   { id: 1, name: "Active" },

@@ -42,11 +42,16 @@ export default function PermissionSelector({
     initialExpandedSections
   );
 
+  // Pastikan selectedPermissions adalah array
+  const safeSelectedPermissions = Array.isArray(selectedPermissions) ? selectedPermissions : [];
+
   // Handle individual permission toggle
   const togglePermission = (permission: string) => {
-    const newPermissions = selectedPermissions.includes(permission)
-      ? selectedPermissions.filter((p) => p !== permission)
-      : [...selectedPermissions, permission];
+    
+    const newPermissions = safeSelectedPermissions.includes(permission)
+      ? safeSelectedPermissions.filter((p) => p !== permission)
+      : [...safeSelectedPermissions, permission];
+    
     onPermissionsChange(newPermissions);
   };
 
@@ -54,18 +59,18 @@ export default function PermissionSelector({
   const toggleSectionAll = (sectionKey: string) => {
     const sectionPermissions = permissions[sectionKey].permissions;
     const allSelected = sectionPermissions.every((p) =>
-      selectedPermissions.includes(p)
+      safeSelectedPermissions.includes(p)
     );
 
     let newPermissions: string[];
     if (allSelected) {
       // Remove all section permissions
-      newPermissions = selectedPermissions.filter(
+      newPermissions = safeSelectedPermissions.filter(
         (p) => !sectionPermissions.includes(p)
       );
     } else {
       // Add all section permissions
-      newPermissions = [...selectedPermissions];
+      newPermissions = [...safeSelectedPermissions];
       sectionPermissions.forEach((p) => {
         if (!newPermissions.includes(p)) {
           newPermissions.push(p);
@@ -82,7 +87,7 @@ export default function PermissionSelector({
     );
 
     const allSelected = allPermissions.every((p) =>
-      selectedPermissions.includes(p)
+      safeSelectedPermissions.includes(p)
     );
 
     onPermissionsChange(allSelected ? [] : allPermissions);
@@ -102,7 +107,7 @@ export default function PermissionSelector({
     const sectionPermissions = permissions[sectionKey].permissions;
     return (
       sectionPermissions.length > 0 &&
-      sectionPermissions.every((p) => selectedPermissions.includes(p))
+      sectionPermissions.every((p) => safeSelectedPermissions.includes(p))
     );
   };
 
@@ -110,8 +115,8 @@ export default function PermissionSelector({
   const isSectionPartiallySelected = (sectionKey: string) => {
     const sectionPermissions = permissions[sectionKey].permissions;
     return (
-      sectionPermissions.some((p) => selectedPermissions.includes(p)) &&
-      !sectionPermissions.every((p) => selectedPermissions.includes(p))
+      sectionPermissions.some((p) => safeSelectedPermissions.includes(p)) &&
+      !sectionPermissions.every((p) => safeSelectedPermissions.includes(p))
     );
   };
 
@@ -121,8 +126,8 @@ export default function PermissionSelector({
   );
   const isAllSelected =
     allPermissions.length > 0 &&
-    allPermissions.every((p) => selectedPermissions.includes(p));
-  const isPartiallySelected = selectedPermissions.length > 0 && !isAllSelected;
+    allPermissions.every((p) => safeSelectedPermissions.includes(p));
+  const isPartiallySelected = safeSelectedPermissions.length > 0 && !isAllSelected;
 
   // Format permission name for display
   const formatPermissionName = (permission: string) => {
@@ -156,7 +161,7 @@ export default function PermissionSelector({
             </span>
             {showSectionCounters && (
               <span className="text-sm text-gray-600">
-                ({selectedPermissions.length}/{allPermissions.length})
+                ({safeSelectedPermissions.length}/{allPermissions.length})
               </span>
             )}
           </label>
@@ -170,22 +175,29 @@ export default function PermissionSelector({
           const isFullySelected = isSectionFullySelected(sectionKey);
           const isPartiallySelected = isSectionPartiallySelected(sectionKey);
           const selectedCount = section.permissions.filter((p) =>
-            selectedPermissions.includes(p)
+            safeSelectedPermissions.includes(p)
           ).length;
 
           return (
             <div key={sectionKey} className="bg-white">
               {/* Section Header */}
-              <div className="p-4 flex items-center justify-between">
-                <label className="flex items-center space-x-3 cursor-pointer flex-1">
+              <div
+                className="p-4 flex items-center justify-between cursor-pointer hover:bg-gray-50 transition-colors"
+                onClick={() => toggleSection(sectionKey)}
+              >
+                <div className="flex items-center space-x-3 flex-1">
                   <input
                     type="checkbox"
                     checked={isFullySelected}
                     ref={(input) => {
                       if (input) input.indeterminate = isPartiallySelected;
                     }}
-                    onChange={() => toggleSectionAll(sectionKey)}
-                    className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
+                    onChange={(e) => {
+                      e.stopPropagation();
+                      toggleSectionAll(sectionKey);
+                    }}
+                    onClick={(e) => e.stopPropagation()}
+                    className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500 cursor-pointer"
                   />
                   <span className="font-medium text-gray-900">
                     {section.label}
@@ -195,10 +207,13 @@ export default function PermissionSelector({
                       ({selectedCount}/{section.permissions.length})
                     </span>
                   )}
-                </label>
+                </div>
                 <button
                   type="button"
-                  onClick={() => toggleSection(sectionKey)}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    toggleSection(sectionKey);
+                  }}
                   className="p-1 hover:bg-gray-100 rounded transition-colors"
                 >
                   {isExpanded ? (
@@ -219,7 +234,7 @@ export default function PermissionSelector({
                     >
                       <input
                         type="checkbox"
-                        checked={selectedPermissions.includes(permission)}
+                        checked={safeSelectedPermissions.includes(permission)}
                         onChange={() => togglePermission(permission)}
                         className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
                       />
@@ -236,11 +251,11 @@ export default function PermissionSelector({
       </div>
 
       {/* Selected permissions summary */}
-      {showSelectedSummary && selectedPermissions.length > 0 && (
+      {showSelectedSummary && safeSelectedPermissions.length > 0 && (
         <div className="text-sm text-gray-600 bg-blue-50 p-3 rounded-lg">
-          <strong>Selected permissions ({selectedPermissions.length}):</strong>
+          <strong>Selected permissions ({safeSelectedPermissions.length}):</strong>
           <div className="mt-1 text-xs">
-            {selectedPermissions.map(formatPermissionName).join(", ")}
+            {safeSelectedPermissions.map(formatPermissionName).join(", ")}
           </div>
         </div>
       )}

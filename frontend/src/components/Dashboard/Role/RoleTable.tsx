@@ -1,13 +1,13 @@
-import { Role } from "../../../types";
+import { Role, TriggerModalProps } from "../../../types";
 import { HeaderBox } from "../Box.tsx";
 import { Table, TableBody, TableHead, Td, Th } from "../../Table.tsx";
-import { Link } from "react-router-dom";
+import formatPermission from "../../../helper/formatPermission.tsx";
 
-export interface RoleProps {
+export interface RoleProps extends TriggerModalProps {
   role: Role[];
 }
 
-export default function RoleTable({ role }: RoleProps) {
+export default function RoleTable({ role, onUpdate }: RoleProps) {
   return (
     <HeaderBox title="Role">
       <Table>
@@ -27,14 +27,29 @@ export default function RoleTable({ role }: RoleProps) {
               <tr key={role.id}>
                 <Td>{index + 1}</Td>
                 <Td>{role.name}</Td>
-                <Td>{role.permission || "none"}</Td>
+                <Td>
+                  {role.permission && role.permission.length > 0 ? (
+                    <div className="flex flex-wrap gap-1">
+                      {role.permission.map((perm, idx) => (
+                        <span
+                          key={idx}
+                          className="bg-blue-100 text-blue-800 text-xs font-semibold px-2.5 py-0.5 rounded"
+                        >
+                          {formatPermission(perm)}
+                        </span>
+                      ))}
+                    </div>
+                  ) : (
+                    <span className="text-gray-500 italic">none</span>
+                  )}
+                </Td>
                 <Td className="text-right text-sm font-medium">
-                  <Link
-                    to={""}
+                  <button
+                    onClick={() => onUpdate?.(role)}
                     className="text-blue-600 hover:text-blue-900 ml-4"
                   >
                     UPDATE
-                  </Link>
+                  </button>
                   <button
                     // onClick={() => deleteModal.openModal.openModal(car)}
                     className="text-red-600 hover:text-red-900 ml-4"

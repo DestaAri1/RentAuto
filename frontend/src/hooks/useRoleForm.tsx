@@ -1,136 +1,207 @@
 import { useForm } from "react-hook-form";
-import { RoleFormData, roleFormSchema } from "../schema/Schema.tsx";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { useState } from "react";
-import { useSubmissionErrorHandler } from "./useSubmissionErrorHandler.tsx";
+import { useState, useCallback, useEffect, useMemo } from "react";
+import { RoleFormData } from "../schema/Schema";
 import { CreateRole } from "../services/RoleServices.tsx";
 
-interface UseRoleFormOptions {
-  onSuccess?: (data: RoleFormData) => void;
+interface UseRoleFormProps {
+  onSuccess?: () => Promise<void> | void;
   onError?: (error: any) => void;
+  isUpdate?: boolean;
+  roleId?: string;
+  initialData?: {
+    name: string;
+    permissions: string[] | string;
+  };
 }
 
-export default function useRoleForm(options: UseRoleFormOptions = {}) {
+interface UseRoleFormReturn {
+  register: any;
+  onSubmit: (e?: React.BaseSyntheticEvent) => Promise<void>;
+  formState: any;
+  setPermissions: (permissions: string[]) => void;
+  watchedValues: RoleFormData;
+  submissionErrors: {
+    general?: string;
+    network?: string;
+    validation?: string;
+  };
+  resetAllErrors: () => void;
+  reset: () => void;
+}
+
+export default function useRoleForm(
+  props: UseRoleFormProps = {}
+): UseRoleFormReturn {
+  const { onSuccess, onError, isUpdate = false, roleId, initialData } = props;
+  const [submissionErrors, setSubmissionErrors] = useState<{
+    general?: string;
+    network?: string;
+    validation?: string;
+  }>({});
+
+  // Helper function untuk memproses permissions
+  const processPermissions = useCallback(
+    (permissions: string[] | string): string[] => {
+      if (!permissions) return [];
+
+      // Jika permissions adalah string (JSON), parse terlebih dahulu
+      if (typeof permissions === "string") {
+        try {
+          return JSON.parse(permissions);
+        } catch (error) {
+          console.error("Error parsing permissions:", error);
+          return [];
+        }
+      }
+
+      // Jika sudah array, return langsung
+      if (Array.isArray(permissions)) {
+        return permissions;
+      }
+
+      return [];
+    },
+    []
+  );
+
+  // Memoize default values dengan penanganan permissions yang lebih baik
+  const defaultValues = useMemo(
+    () => ({
+      name: initialData?.name || "",
+      permissions: processPermissions(initialData?.permissions || []),
+    }),
+    [initialData?.name, initialData?.permissions, processPermissions]
+  );
+
   const {
     register,
     handleSubmit,
-    formState: { errors, isSubmitting, isDirty, isValid },
-    watch,
+    formState,
     setValue,
+    watch,
     reset,
-    setError,
+    clearErrors,
   } = useForm<RoleFormData>({
-    resolver: zodResolver(roleFormSchema),
-    defaultValues: {
-      name: "",
-      permissions: [],
-    },
+    defaultValues,
     mode: "onChange",
   });
 
-  const [isFormSubmitted, setIsFormSubmitted] = useState(false);
-  const {
-    submissionErrors,
-    handleSubmissionError,
-    resetSubmissionErrors,
-    setSubmissionErrors,
-  } = useSubmissionErrorHandler(setError);
-
   const watchedValues = watch();
 
-  // Helper function to set permissions
-  const setPermissions = (permissions: string[]) => {
-    setValue("permissions", permissions, {
-      shouldValidate: true,
-      shouldDirty: true,
-    });
-  };
+  // Reset form ketika initialData berubah (untuk update mode)
+  useEffect(() => {
+    if (isUpdate && initialData) {
+      const processedPermissions = processPermissions(
+        initialData.permissions || []
+      );
 
-  // Submit handler yang menangani API call
-  const onSubmit = handleSubmit(async (data: RoleFormData) => {
-    try {
-      setIsFormSubmitted(true);
-      // API call - customize this endpoint as needed
-      const formData = {
-        name: data.name,
-        permission: data.permissions
-      }
-      const response = await CreateRole(formData);
+      // Reset dengan delay untuk memastikan component sudah ter-render
+      setTimeout(() => {
+        reset({
+          name: initialData.name || "",
+          permission: processedPermissions,
+        });
 
-      // Reset form on success
-      reset();
-      resetSubmissionErrors();
-
-      return response.data;
-    } catch (error) {
-      console.error("Error creating role:", error);
-      handleSubmissionError(error);
-
-      // Call error callback if provided
-      if (options.onError) {
-        options.onError(error);
-      }
-
-      throw error; // Re-throw to prevent form from closing
+        // Set permissions secara eksplisit juga
+        setValue("permission", processedPermissions, {
+          shouldValidate: true,
+          shouldDirty: false,
+        });
+      }, 100);
     }
-  });
+  }, [isUpdate, initialData, reset, processPermissions, setValue]);
 
-  // Custom submit handler for external API calls
-  const submitWithCustomFetch = (
-    fetchFunction: (data: RoleFormData) => Promise<any>
-  ) => {
-    return handleSubmit(async (data: RoleFormData) => {
-      try {
-        setIsFormSubmitted(true);
-        console.log("Submitting role data:", data);
+  // Memoized setPermissions dengan logging untuk debugging
+  const setPermissions = useCallback(
+    (permissions: string[]) => {
+      setValue("permission", permissions, {
+        shouldValidate: true,
+        shouldDirty: true,
+      });
+    },
+    [setValue]
+  );
 
-        const result = await fetchFunction(data);
-        console.log("Role created successfully:", result);
+  // Memoized resetAllErrors
+  const resetAllErrors = useCallback(() => {
+    setSubmissionErrors({});
+    clearErrors();
+  }, [clearErrors]);
 
-        // Reset form on success
-        reset();
-        resetSubmissionErrors();
+  // Success handler
+  const handleSuccess = useCallback(async () => {
+    if (onSuccess) {
+      await onSuccess();
+    }
+  }, [onSuccess]);
 
-        // Call success callback if provided
-        if (options.onSuccess) {
-          options.onSuccess(result);
-        }
-
-        return result;
-      } catch (error) {
-        console.error("Error creating role:", error);
-        handleSubmissionError(error);
-
-        // Call error callback if provided
-        if (options.onError) {
-          options.onError(error);
-        }
-
-        throw error; // Re-throw to prevent form from closing
+  // Error handler
+  const handleError = useCallback(
+    (error: any) => {
+      if (onError) {
+        onError(error);
       }
-    });
-  };
+    },
+    [onError]
+  );
+
+  // Form submission handler
+  const onSubmit = useCallback(
+    handleSubmit(async (data: RoleFormData) => {
+      try {
+        setSubmissionErrors({});
+        
+        // Simulate API call
+        if (isUpdate && roleId) {
+          // Update role API call
+          console.log("Updating role:", { id: roleId, ...data });
+          // await updateRoleAPI(roleId, data);
+        } else {
+          // Create role API call
+          await CreateRole(data)
+        }
+
+        // Call success callback
+        await handleSuccess();
+      } catch (error: any) {
+        console.error("Form submission error:", error);
+
+        // Handle different types of errors
+        if (error.response?.status === 422) {
+          setSubmissionErrors({
+            validation: error.response.data.message || "Validation failed",
+          });
+        } else if (error.code === "NETWORK_ERROR") {
+          setSubmissionErrors({
+            network: "Network error. Please check your connection.",
+          });
+        } else {
+          setSubmissionErrors({
+            general: error.message || "An unexpected error occurred",
+          });
+        }
+
+        // Call error callback
+        handleError(error);
+      }
+    }),
+    [handleSubmit, isUpdate, roleId, handleSuccess, handleError]
+  );
+
+  // Reset function
+  const resetForm = useCallback(() => {
+    reset(defaultValues);
+    setSubmissionErrors({});
+  }, [reset, defaultValues]);
 
   return {
     register,
-    handleSubmit,
-    onSubmit, // Default submit handler with built-in fetch
-    submitWithCustomFetch, // For custom fetch functions
-    formState: {
-      errors,
-      isSubmitting,
-      isDirty,
-      isValid,
-      isFormSubmitted,
-    },
-    // Form data
-    watchedValues,
-    setValue,
+    onSubmit,
+    formState,
     setPermissions,
-    reset,
+    watchedValues,
     submissionErrors,
-    handleSubmissionError,
-    resetSubmissionErrors,
-    setSubmissionErrors,
+    resetAllErrors,
+    reset: resetForm,
   };
 }

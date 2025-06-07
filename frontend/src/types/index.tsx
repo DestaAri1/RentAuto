@@ -9,6 +9,10 @@ export interface ChildProps {
 export interface ModalProps<T = any> {
   isOpen: boolean;
   onClose: () => void;
+  action?: TriggerModalProps<T>
+}
+
+export interface TriggerModalProps<T = any> {
   onStatus?: (data: T) => void;
   onUpdate?: (data: T) => void;
   onDelete?: (data: T) => void;
