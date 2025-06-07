@@ -1,7 +1,7 @@
 import { useForm } from "react-hook-form";
 import { useState, useCallback, useEffect, useMemo } from "react";
 import { RoleFormData } from "../schema/Schema";
-import { CreateRole } from "../services/RoleServices.tsx";
+import { CreateRole, UpdateRole } from "../services/RoleServices.tsx";
 
 interface UseRoleFormProps {
   onSuccess?: () => Promise<void> | void;
@@ -154,7 +154,7 @@ export default function useRoleForm(
         // Simulate API call
         if (isUpdate && roleId) {
           // Update role API call
-          console.log("Updating role:", { id: roleId, ...data });
+          await UpdateRole(roleId, data)
           // await updateRoleAPI(roleId, data);
         } else {
           // Create role API call

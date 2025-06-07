@@ -15,3 +15,13 @@ export const CreateRole = async (data: RoleFormData) => {
     throw error;
   }
 };
+
+export const UpdateRole = async (id: string, data: RoleFormData) => {
+  try {
+    const response = await apiClient.patch(`/admin/role/${id}`, data);
+    return response;
+  } catch (error) {
+    console.log(error);
+    throw error;
+  }
+}

@@ -124,7 +124,7 @@ export default function ModalUpdateRole({
   return (
     <Modal isOpen={isOpen} onClose={onClose} title="Update Role">
       {/* Debug info - hanya tampil di development */}
-      {process.env.NODE_ENV === "development" && isOpen && (
+      {/* {process.env.NODE_ENV === "development" && isOpen && (
         <div className="mb-4 p-3 bg-gray-100 rounded-lg text-xs">
           <h4 className="font-bold mb-2">DEBUG INFO:</h4>
           <div>Initial Data: {JSON.stringify(initialData, null, 2)}</div>
@@ -140,7 +140,7 @@ export default function ModalUpdateRole({
             Initial Permission: {JSON.stringify(initialPermission, null, 2)}
           </div>
         </div>
-      )}
+      )} */}
       <FormRole
         register={register}
         errors={errors}
