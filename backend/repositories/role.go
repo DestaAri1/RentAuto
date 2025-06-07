@@ -3,6 +3,7 @@ package repository
 import (
 	"context"
 	"encoding/json"
+	"errors"
 
 	"github.com/DestaAri1/RentAuto/models"
 	"github.com/google/uuid"
@@ -77,15 +78,28 @@ func (r *RoleRepository) UpdateRole(ctx context.Context, formData *models.FormRo
 
 func (r *RoleRepository) DeleteRole(ctx context.Context, roleId uuid.UUID) error {
 	tx := r.db.Begin()
-	
+
+	var checkRole models.Role
+	res := tx.Model(&models.Role{}).Where("id = ?", roleId).First(&checkRole)
+	if res.Error != nil {
+		tx.Rollback()
+		return res.Error
+	}
+
+	if checkRole.Name == "Administrator" || checkRole.Name == "User" {
+		tx.Rollback()
+		return errors.New("Immune role")
+	}
+
 	if res := tx.Where("id = ?", roleId).Delete(&models.Role{}); res.Error != nil {
 		tx.Rollback()
 		return res.Error
 	}
-	
+
 	tx.Commit()
 	return nil
 }
+
 
 func NewRoleRepository(db *gorm.DB) models.RoleRepository {
 	return &RoleRepository{
