@@ -32,10 +32,10 @@ export default function ModalAddRole({
 
   // Sync with form state
   useEffect(() => {
-    if (watchedValues.permissions) {
-      setSelectedPermissions(watchedValues.permissions);
+    if (watchedValues.permission) {
+      setSelectedPermissions(watchedValues.permission);
     }
-  }, [watchedValues.permissions]);
+  }, [watchedValues.permission]);
 
   const handlePermissionsChange = (permissions: string[]) => {
     setSelectedPermissions(permissions);

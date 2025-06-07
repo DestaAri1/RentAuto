@@ -24,4 +24,14 @@ export const UpdateRole = async (id: string, data: RoleFormData) => {
     console.log(error);
     throw error;
   }
-}
+};
+
+export const DeleteRole = async (id: string) => {
+  try {
+    const response = await apiClient.delete(`/admin/role/${id}`);
+    return response;
+  } catch (error) {
+    console.log(error);
+    throw error;
+  }
+};

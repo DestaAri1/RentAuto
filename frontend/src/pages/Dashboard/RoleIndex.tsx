@@ -95,6 +95,13 @@ function RoleContent({
     onError: handleUpdateError,
   });
 
+  const deleteRole = useRoleForm({
+    isDelete: true,
+    roleId: selectedRole?.id,
+    onSuccess: handleUpdateSuccess,
+    onError: handleUpdateError,
+  });
+
   const handleUpdateRole = useCallback(
     (roleData: any) => {
       setSelectedRole(roleData);

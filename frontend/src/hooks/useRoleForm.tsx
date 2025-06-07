@@ -1,12 +1,18 @@
 import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
 import { useState, useCallback, useEffect, useMemo } from "react";
-import { RoleFormData } from "../schema/Schema";
-import { CreateRole, UpdateRole } from "../services/RoleServices.tsx";
+import { RoleFormData, roleFormSchema } from "../schema/Schema.tsx";
+import {
+  CreateRole,
+  DeleteRole,
+  UpdateRole,
+} from "../services/RoleServices.tsx";
 
 interface UseRoleFormProps {
   onSuccess?: () => Promise<void> | void;
   onError?: (error: any) => void;
   isUpdate?: boolean;
+  isDelete?: boolean;
   roleId?: string;
   initialData?: {
     name: string;
@@ -32,7 +38,15 @@ interface UseRoleFormReturn {
 export default function useRoleForm(
   props: UseRoleFormProps = {}
 ): UseRoleFormReturn {
-  const { onSuccess, onError, isUpdate = false, roleId, initialData } = props;
+  const {
+    onSuccess,
+    onError,
+    isUpdate = false,
+    roleId,
+    initialData,
+    isDelete = false,
+  } = props;
+
   const [submissionErrors, setSubmissionErrors] = useState<{
     general?: string;
     network?: string;
@@ -68,7 +82,7 @@ export default function useRoleForm(
   const defaultValues = useMemo(
     () => ({
       name: initialData?.name || "",
-      permissions: processPermissions(initialData?.permissions || []),
+      permission: processPermissions(initialData?.permissions || []), // Gunakan 'permission' sesuai schema
     }),
     [initialData?.name, initialData?.permissions, processPermissions]
   );
@@ -81,9 +95,11 @@ export default function useRoleForm(
     watch,
     reset,
     clearErrors,
+    trigger,
   } = useForm<RoleFormData>({
+    resolver: zodResolver(roleFormSchema), // Tambahkan Zod resolver
     defaultValues,
-    mode: "onChange",
+    mode: "onChange", // Validasi real-time
   });
 
   const watchedValues = watch();
@@ -95,31 +111,25 @@ export default function useRoleForm(
         initialData.permissions || []
       );
 
-      // Reset dengan delay untuk memastikan component sudah ter-render
-      setTimeout(() => {
-        reset({
-          name: initialData.name || "",
-          permission: processedPermissions,
-        });
-
-        // Set permissions secara eksplisit juga
-        setValue("permission", processedPermissions, {
-          shouldValidate: true,
-          shouldDirty: false,
-        });
-      }, 100);
+      // Reset dengan data yang benar
+      reset({
+        name: initialData.name || "",
+        permission: processedPermissions,
+      });
     }
-  }, [isUpdate, initialData, reset, processPermissions, setValue]);
+  }, [isUpdate, initialData, reset, processPermissions]);
 
-  // Memoized setPermissions dengan logging untuk debugging
+  // Memoized setPermissions dengan validasi trigger
   const setPermissions = useCallback(
     (permissions: string[]) => {
       setValue("permission", permissions, {
         shouldValidate: true,
         shouldDirty: true,
       });
+      // Trigger validasi manual untuk memastikan form state ter-update
+      trigger("permission");
     },
-    [setValue]
+    [setValue, trigger]
   );
 
   // Memoized resetAllErrors
@@ -150,15 +160,20 @@ export default function useRoleForm(
     handleSubmit(async (data: RoleFormData) => {
       try {
         setSubmissionErrors({});
-        
-        // Simulate API call
-        if (isUpdate && roleId) {
-          // Update role API call
-          await UpdateRole(roleId, data)
-          // await updateRoleAPI(roleId, data);
+
+        // Validasi manual sebelum submit
+        const isValid = await trigger();
+        if (!isValid) {
+          console.log("Form validation failed");
+          return;
+        }
+
+        if (isDelete && roleId) {
+          await DeleteRole(roleId);
+        } else if (isUpdate && roleId) {
+          await UpdateRole(roleId, data);
         } else {
-          // Create role API call
-          await CreateRole(data)
+          await CreateRole(data);
         }
 
         // Call success callback
@@ -185,7 +200,15 @@ export default function useRoleForm(
         handleError(error);
       }
     }),
-    [handleSubmit, isUpdate, roleId, handleSuccess, handleError]
+    [
+      handleSubmit,
+      isUpdate,
+      isDelete,
+      roleId,
+      handleSuccess,
+      handleError,
+      trigger,
+    ]
   );
 
   // Reset function

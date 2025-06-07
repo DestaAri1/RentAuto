@@ -7,7 +7,7 @@ export interface RoleProps extends TriggerModalProps {
   role: Role[];
 }
 
-export default function RoleTable({ role, onUpdate }: RoleProps) {
+export default function RoleTable({ role, onUpdate, onDelete }: RoleProps) {
   return (
     <HeaderBox title="Role">
       <Table>
@@ -51,7 +51,7 @@ export default function RoleTable({ role, onUpdate }: RoleProps) {
                     UPDATE
                   </button>
                   <button
-                    // onClick={() => deleteModal.openModal.openModal(car)}
+                    onClick={() => onDelete?.(role)}
                     className="text-red-600 hover:text-red-900 ml-4"
                     type="button"
                   >
