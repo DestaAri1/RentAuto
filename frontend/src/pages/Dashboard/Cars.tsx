@@ -11,6 +11,7 @@ import useModal from "../../hooks/useModal.tsx";
 import AddCarModal from "../../components/Dashboard/Cars/Car/AddCarModal.tsx";
 import UpdateCarModal from "../../components/Dashboard/Cars/Car/UpdateCarModal.tsx";
 import { useCarForm } from "../../hooks/useCarForm.tsx";
+import { PermissionWrapper } from "../../utils/PermissionWrapper.tsx";
 
 export default function CarsIndex() {
   const breadcrumbItems = [
@@ -111,12 +112,14 @@ export default function CarsIndex() {
       title="My Rentals"
       breadcrumb={breadcrumbItems}
       actionButton={
-        <button
-          onClick={createModal.openModal}
-          className="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700"
-        >
-          Add Car
-        </button>
+        <PermissionWrapper permission="create-car">
+          <button
+            onClick={createModal.openModal}
+            className="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700"
+          >
+            Add Car
+          </button>
+        </PermissionWrapper>
       }
       onSearch={(text) => setSearchTerm(text)}
     >

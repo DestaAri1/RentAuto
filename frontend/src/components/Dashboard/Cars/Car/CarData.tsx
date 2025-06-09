@@ -5,6 +5,7 @@ import { Cars, CarsProps } from "../../../../types/index.tsx";
 import { DashBoxTitle } from "../../../DashboardComponents.tsx";
 import { Star } from "lucide-react";
 import { usePagination } from "../../../../hooks/usePagination.tsx";
+import { PermissionWrapper } from "../../../../utils/PermissionWrapper.tsx";
 
 interface CarModalProps {
   onUpdate: (car: Cars) => void;
@@ -103,27 +104,33 @@ export default function CarData({ cars, onUpdate, onDelete }: CombinedProps) {
                         <Td>{car.available}</Td>
                         <Td>{car.available}</Td>
                         <Td className="text-right text-sm font-medium">
-                          <button
-                            onClick={() => handleViewClick(car)}
-                            className="text-yellow-600 hover:text-yellow-900"
-                            type="button"
-                          >
-                            VIEW
-                          </button>
-                          <button
-                            onClick={() => onUpdate(car)}
-                            className="text-blue-600 hover:text-blue-900 ml-4"
-                            type="button"
-                          >
-                            UPDATE
-                          </button>
-                          <button
-                            onClick={() => onDelete(car)}
-                            className="text-red-600 hover:text-red-900 ml-4"
-                            type="button"
-                          >
-                            DELETE
-                          </button>
+                          <PermissionWrapper permission="view_car">
+                            <button
+                              onClick={() => handleViewClick(car)}
+                              className="text-yellow-600 hover:text-yellow-900"
+                              type="button"
+                            >
+                              VIEW
+                            </button>
+                          </PermissionWrapper>
+                          <PermissionWrapper permission="update_car">
+                            <button
+                              onClick={() => onUpdate(car)}
+                              className="text-blue-600 hover:text-blue-900 ml-4"
+                              type="button"
+                            >
+                              UPDATE
+                            </button>
+                          </PermissionWrapper>
+                          <PermissionWrapper permission="delete_car">
+                            <button
+                              onClick={() => onDelete(car)}
+                              className="text-red-600 hover:text-red-900 ml-4"
+                              type="button"
+                            >
+                              DELETE
+                            </button>
+                          </PermissionWrapper>
                         </Td>
                       </tr>
                     ))

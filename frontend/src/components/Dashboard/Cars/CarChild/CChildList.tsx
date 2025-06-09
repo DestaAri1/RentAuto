@@ -8,6 +8,7 @@ import useStatusCarChild from "../../../../hooks/carChild/useStatusCarChild.tsx"
 import CarChildStatusModal from "./CarChildStatusModal.tsx";
 import CarChildDeleteModal from "./CarChildDeleteModal.tsx";
 import { CarChild } from "../../../../types/index.tsx";
+import { PermissionWrapper } from "../../../../utils/PermissionWrapper.tsx";
 
 interface Props {
   route: string;
@@ -34,11 +35,8 @@ export default function CChildList({ route }: Props) {
         // Refresh the car list after successful status update
         if (slug) {
           fetchCarChild({ slug, mode: "all" });
-          statusModal.openModal.closeModal()
+          statusModal.openModal.closeModal();
         }
-
-        // Optional: Show success notification
-        console.log("Status updated successfully");
       }
     } catch (error) {
       console.error("Failed to update status:", error);
@@ -51,7 +49,7 @@ export default function CChildList({ route }: Props) {
     if (await deleteModal.deleteCarChild(car.id)) {
       if (slug) {
         fetchCarChild({ slug, mode: "all" });
-        deleteModal.openModal.closeModal()
+        deleteModal.openModal.closeModal();
       }
     }
   };
@@ -87,26 +85,30 @@ export default function CChildList({ route }: Props) {
                   <CarChildAvailable status={car.is_active} />
                 </Td>
                 <Td className="text-right text-sm font-medium">
-                  <button
-                    onClick={() => statusModal.openModal.openModal(car)}
-                    className="text-yellow-600 hover:text-yellow-900"
-                    disabled={statusModal.isSubmitting}
-                  >
-                    {statusModal.isSubmitting ? "UPDATING..." : "STATUS"}
-                  </button>
-                  <Link
-                    to={`${route}/${car.slug}`}
-                    className="text-blue-600 hover:text-blue-900 ml-4"
-                  >
-                    UPDATE
-                  </Link>
-                  <button
-                    onClick={() => deleteModal.openModal.openModal(car)}
-                    className="text-red-600 hover:text-red-900 ml-4"
-                    type="button"
-                  >
-                    DELETE
-                  </button>
+                  <PermissionWrapper permission="update_car">
+                    <button
+                      onClick={() => statusModal.openModal.openModal(car)}
+                      className="text-yellow-600 hover:text-yellow-900"
+                      disabled={statusModal.isSubmitting}
+                    >
+                      {statusModal.isSubmitting ? "UPDATING..." : "STATUS"}
+                    </button>
+                    <Link
+                      to={`${route}/${car.slug}`}
+                      className="text-blue-600 hover:text-blue-900 ml-4"
+                    >
+                      UPDATE
+                    </Link>
+                  </PermissionWrapper>
+                  <PermissionWrapper permission="delete_car">
+                    <button
+                      onClick={() => deleteModal.openModal.openModal(car)}
+                      className="text-red-600 hover:text-red-900 ml-4"
+                      type="button"
+                    >
+                      DELETE
+                    </button>
+                  </PermissionWrapper>
                 </Td>
               </tr>
             ))

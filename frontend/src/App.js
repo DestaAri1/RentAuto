@@ -12,7 +12,11 @@ import RoleIndex from "./pages/Dashboard/RoleIndex.tsx";
 import { Rent } from "./pages/Home/Rent.tsx";
 import { Home } from "./pages/Home/Home.tsx";
 import { AuthProvider } from "./context/AuthContext.tsx";
-import { AuthRoute, DashboardRoute } from "./utils/RouteGuard.tsx";
+import {
+  AuthRoute,
+  DashboardRoute,
+  OnlyAdminRoute,
+} from "./utils/RouteGuard.tsx";
 import RouteWrapper from "./utils/Wrapper.tsx";
 
 function App() {
@@ -47,7 +51,7 @@ function App() {
             path="/dashboard"
             element={
               <DashboardRoute>
-                <RouteWrapper/>
+                <RouteWrapper />
               </DashboardRoute>
             }
           >
@@ -66,7 +70,15 @@ function App() {
               element={<UpdateCarChild />}
             />
             <Route path="bookings" element={<Bookings />} />
-            <Route path="roles" element={<RoleIndex />} />
+
+            <Route
+              path="user-management/roles"
+              element={
+                <OnlyAdminRoute>
+                  <RoleIndex />
+                </OnlyAdminRoute>
+              }
+            />
           </Route>
         </Routes>
       </BrowserRouter>

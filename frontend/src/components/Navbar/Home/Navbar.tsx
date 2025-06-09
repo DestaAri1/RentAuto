@@ -163,7 +163,7 @@ export default function Navbar() {
                       </div>
                     </div>
 
-                    {user.role.name === "Administrator" && (
+                    {user.role.name.toLowerCase() !== 'user' && (
                       <Link
                         to="/dashboard"
                         className="flex items-center space-x-2 px-4 py-2.5 text-sm hover:bg-gray-100 transition"

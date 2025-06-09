@@ -7,6 +7,7 @@ import useCarType from "../../../../hooks/useCarType.tsx";
 import { lazy, Suspense } from "react";
 import Loading from "../../../Loading.tsx";
 import useModal from "../../../../hooks/useModal.tsx";
+import { PermissionWrapper } from "../../../../utils/PermissionWrapper.tsx";
 
 const CarTypeTable = lazy(() => import("./CarTypeTable.tsx"));
 
@@ -57,12 +58,14 @@ export default function CarTypes() {
   return (
     <div className="bg-white shadow rounded-lg">
       <DashBoxTitle title="Car Types">
-        <button
-          onClick={() => createTypeModal.openModal()}
-          className="text-sm font-medium text-blue-600 hover:text-blue-500"
-        >
-          Add Type
-        </button>
+        <PermissionWrapper permission="create_car_types">
+          <button
+            onClick={() => createTypeModal.openModal()}
+            className="text-sm font-medium text-blue-600 hover:text-blue-500"
+          >
+            Add Type
+          </button>
+        </PermissionWrapper>
       </DashBoxTitle>
       <div className="flex flex-col">
         <div className="overflow-x-auto">

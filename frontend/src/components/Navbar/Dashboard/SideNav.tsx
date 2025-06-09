@@ -30,8 +30,16 @@ export default function SideNav({ sidebarOpen, setSidebarOpen }: SideBarProps) {
       icon: User,
       isDropdown: true,
       subItems: [
-        { title: "Users", href: "/dashboard/users", icon: Users },
-        { title: "Roles", href: "/dashboard/roles", icon: Shield },
+        {
+          title: "Users",
+          href: "/dashboard/user-management/users",
+          icon: Users,
+        },
+        {
+          title: "Roles",
+          href: "/dashboard/user-management/roles",
+          icon: Shield,
+        },
       ],
     },
     { title: "Settings", href: "/settings", icon: Settings },

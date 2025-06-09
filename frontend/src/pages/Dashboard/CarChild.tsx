@@ -7,6 +7,7 @@ import {
 } from "../../context/CarParentContext.tsx";
 import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import { PermissionWrapper } from "../../utils/PermissionWrapper.tsx";
 
 // ✅ Komponen terpisah yang menggunakan context
 function CarChildContent() {
@@ -16,7 +17,6 @@ function CarChildContent() {
   useEffect(() => {
     // ✅ Tunggu loading selesai baru redirect
     if (!isLoading && !parent) {
-      console.log("No parent data found, redirecting...");
       navigate("/dashboard/my-rentals");
     }
   }, [parent, isLoading, navigate]);
@@ -40,12 +40,14 @@ function CarChildContent() {
       title="My Rentals"
       breadcrumb={breadcrumbItems}
       actionButton={
-        <Link
-          to={`${parent.route}/create-car`}
-          className="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700"
-        >
-          Add Car
-        </Link>
+        <PermissionWrapper permission="view_car">
+          <Link
+            to={`${parent.route}/create-car`}
+            className="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700"
+          >
+            Add Car
+          </Link>
+        </PermissionWrapper>
       }
     >
       <div className="max-w-7xl mx-auto px-4 sm:px-6 md:px-8">

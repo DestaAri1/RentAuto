@@ -1,7 +1,7 @@
 import { Role, TriggerModalProps } from "../../../types";
 import { HeaderBox } from "../Box.tsx";
 import { Table, TableBody, TableHead, Td, Th } from "../../Table.tsx";
-import formatPermission from "../../../helper/formatPermission.tsx";
+import groupFormatPermissions from "../../../helper/groupFormatPermission.tsx";
 
 export interface RoleProps extends TriggerModalProps {
   role: Role[];
@@ -26,18 +26,11 @@ export default function RoleTable({ role, onUpdate, onDelete }: RoleProps) {
             role.map((role, index) => (
               <tr key={role.id}>
                 <Td>{index + 1}</Td>
-                <Td>{role.name}</Td>
+                <Td>{role.name.toUpperCase()}</Td>
                 <Td>
                   {role.permission && role.permission.length > 0 ? (
-                    <div className="flex flex-wrap gap-1">
-                      {role.permission.map((perm, idx) => (
-                        <span
-                          key={idx}
-                          className="bg-blue-100 text-blue-800 text-xs font-semibold px-2.5 py-0.5 rounded"
-                        >
-                          {formatPermission(perm)}
-                        </span>
-                      ))}
+                    <div className="space-y-1 text-sm">
+                      {groupFormatPermissions(role.permission)}
                     </div>
                   ) : (
                     <span className="text-gray-500 italic">none</span>

@@ -42,7 +42,9 @@ export const RoleProvider = ({ children }: ChildProps) => {
 
     try {
       const response = await GetAllRole();
-      const data = response.data.data || [];
+      const data = (response.data.data || []).filter(
+        (r: Role) => r.name.toLowerCase() !== "administrator"
+      );
       setRole(data);
       hasFetched.current = true;
     } catch (error) {
