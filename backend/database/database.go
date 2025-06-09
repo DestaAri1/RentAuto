@@ -37,12 +37,12 @@ func seedData(db *gorm.DB) {
 	roles := []models.Role{
 		{
 			ID:         uuid.New(),
-			Name:       "Administrator",
+			Name:       "administrator",
 			Permission: []string{"all"},
 		},
 		{
 			ID:         uuid.New(),
-			Name:       "User",
+			Name:       "user",
 			Permission: nil,
 		},
 	}

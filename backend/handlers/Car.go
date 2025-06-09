@@ -2,13 +2,10 @@ package handlers
 
 import (
 	"context"
-	// "path/filepath"
-	// "strings"
 	"time"
 
 	"github.com/DestaAri1/RentAuto/models"
 	"github.com/DestaAri1/RentAuto/policy"
-	// "github.com/DestaAri1/RentAuto/utils"
 	validators "github.com/DestaAri1/RentAuto/validatiors"
 	"github.com/go-playground/validator/v10"
 	"github.com/gofiber/fiber/v2"
@@ -25,16 +22,6 @@ type CarHandler struct {
 func (h *CarHandler) GetCars(ctx *fiber.Ctx) error {
 	context, cancel := context.WithTimeout(context.Background(), time.Duration(5*time.Second))
     defer cancel()
-
-	// Get role ID from context (assuming it's set by middleware)
-	roleId, ok := ctx.Locals("roleId").(uuid.UUID)
-	if !ok {
-		return h.handlerError(ctx, fiber.StatusUnauthorized, "Role ID not found in context")
-	}
-
-	if err := h.carPolicy.CanViewCars(context, roleId); err != nil {
-		return h.handlerError(ctx, fiber.StatusForbidden, "You don't have permission to view cars")
-	}
 
 	res, err := h.repository.GetCars(context)
     if err != nil {

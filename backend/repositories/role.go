@@ -4,6 +4,8 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
+	"fmt"
+	"strings"
 
 	"github.com/DestaAri1/RentAuto/models"
 	"github.com/google/uuid"
@@ -36,8 +38,13 @@ func (r *RoleRepository) GetRoles(ctx context.Context) ([]*models.RoleResponse, 
 }
 
 func (r *RoleRepository) CreateRole(ctx context.Context, formData *models.FormRole) error {
+	data := strings.ToLower(formData.Name)
+	if data == "administrator" || data == "admin" || data == "user" {
+		return fmt.Errorf("cannot create role with name: %s", data)
+	}
+
 	role := &models.Role{
-		Name:       formData.Name,
+		Name:       strings.ToLower(formData.Name),
 		Permission: formData.Permission,
 	}
 
@@ -62,7 +69,7 @@ func (r *RoleRepository) UpdateRole(ctx context.Context, formData *models.FormRo
 	}
 
 	updates := map[string]interface{}{
-		"name":       formData.Name,
+		"name":       strings.ToLower(formData.Name),
 		"permission": string(permissionJSON), // simpan sebagai string JSON
 	}
 

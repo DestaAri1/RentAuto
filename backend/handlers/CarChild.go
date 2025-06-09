@@ -28,8 +28,6 @@ func (h *CarChildHandler) CheckPermission(ctx context.Context, roleId uuid.UUID,
 	var err error
 
 	switch action {
-	case "getAll" :
-		err = h.carChildPolicy.CanViewCars(ctx, roleId)
 	case "getOne" :
 		err = h.carChildPolicy.CanEditCar(ctx, roleId)
 	case "create" :
@@ -46,15 +44,6 @@ func (h *CarChildHandler) CheckPermission(ctx context.Context, roleId uuid.UUID,
 func (h *CarChildHandler) GetCarChild(ctx *fiber.Ctx) error {
 	context, cancel := h.WithTimeout(5 *time.Second)
 	defer cancel()
-
-	roleId, err := h.GetRoleID(ctx)
-	if err != nil {
-		return h.handlerError(ctx, fiber.StatusUnauthorized, err.Error())
-	}
-
-	if err := h.CheckPermission(context, roleId, "getAll"); err != nil {
-		return h.handlerError(ctx, fiber.StatusForbidden, "You don't have permission to view cars")
-	}
 
 	slugStr := ctx.Params("carSlug")
 	

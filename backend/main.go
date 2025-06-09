@@ -100,7 +100,7 @@ func setupRoutes(app *fiber.App, database *gorm.DB, repos AppRepositories, servi
 	// Protected routes
 	protected := api.Use(middlewares.AuthProtected(database))
 
-	//Public Protected Routes
+	// Public Protected Routes
 	//
 	//  User routes
 	//

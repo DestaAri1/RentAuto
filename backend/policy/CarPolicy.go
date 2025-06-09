@@ -16,13 +16,8 @@ func NewCarPolicy(policy *Policy) *CarPolicy {
 	}
 }
 
-// CanViewCars checks if a role can view cars
-func (p *CarPolicy) CanViewCars(ctx context.Context, roleId uuid.UUID) error {
-	return p.CheckPermission(ctx, roleId, "view_cars")
-}
-
 func (p *CarPolicy) CanEditCar(ctx context.Context, roleId uuid.UUID) error {
-	return p.CheckPermission(ctx, roleId, "edit_cars")
+	return p.CheckPermission(ctx, roleId, "edit_car")
 }
 
 // CanCreateCar checks if a role can create cars
