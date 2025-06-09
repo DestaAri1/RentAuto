@@ -1,24 +1,30 @@
 import "./App.css";
 import { BrowserRouter, Route, Routes } from "react-router-dom";
 import Login from "./pages/Auth/Login.tsx";
-import Dashboard from "./pages/Dashboard/Dashboard.tsx";
-import { Rent } from "./pages/Home/Rent.tsx";
-import { Home } from "./pages/Home/Home.tsx";
-import { AuthProvider } from "./context/AuthContext.tsx";
-import { AuthRoute, ProtectedRoute } from "./utils/RouteGuard.tsx";
 import Register from "./pages/Auth/Register.tsx";
+import Dashboard from "./pages/Dashboard/Dashboard.tsx";
 import CarsIndex from "./pages/Dashboard/Cars.tsx";
 import Bookings from "./pages/Dashboard/Bookings.tsx";
 import CarChild from "./pages/Dashboard/CarChild.tsx";
 import AddCarChild from "./pages/Dashboard/CarChild/AddCarChild.tsx";
 import UpdateCarChild from "./pages/Dashboard/CarChild/UpdateCarChild.tsx";
 import RoleIndex from "./pages/Dashboard/RoleIndex.tsx";
+import { Rent } from "./pages/Home/Rent.tsx";
+import { Home } from "./pages/Home/Home.tsx";
+import { AuthProvider } from "./context/AuthContext.tsx";
+import { AuthRoute, DashboardRoute } from "./utils/RouteGuard.tsx";
+import RouteWrapper from "./utils/Wrapper.tsx";
 
 function App() {
   return (
     <AuthProvider>
       <BrowserRouter>
         <Routes>
+          {/* Public Routes */}
+          <Route path="/" element={<Home />} />
+          <Route path="/rent-a-car" element={<Rent />} />
+
+          {/* Auth Routes - redirect to home if already logged in */}
           <Route
             path="/login"
             element={
@@ -35,64 +41,33 @@ function App() {
               </AuthRoute>
             }
           />
-          <Route path="/" element={<Home />} />
-          <Route path="/rent-a-car" element={<Rent />} />
+
+          {/* Dashboard Routes - require authentication and appropriate role */}
           <Route
             path="/dashboard"
             element={
-              <ProtectedRoute>
-                <Dashboard />
-              </ProtectedRoute>
+              <DashboardRoute>
+                <RouteWrapper/>
+              </DashboardRoute>
             }
-          />
-          <Route
-            path="/dashboard/my-rentals"
-            element={
-              <ProtectedRoute>
-                <CarsIndex />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/dashboard/my-rentals/:slug"
-            element={
-              <ProtectedRoute>
-                <CarChild />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/dashboard/my-rentals/:slug/create-car"
-            element={
-              <ProtectedRoute>
-                <AddCarChild />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/dashboard/my-rentals/:slug/:slug"
-            element={
-              <ProtectedRoute>
-                <UpdateCarChild />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/dashboard/bookings"
-            element={
-              <ProtectedRoute>
-                <Bookings />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/dashboard/roles"
-            element={
-              <ProtectedRoute>
-                <RoleIndex />
-              </ProtectedRoute>
-            }
-          />
+          >
+            {/* Dashboard Home */}
+            <Route index element={<Dashboard />} />
+
+            {/* Nested Dashboard Routes */}
+            <Route path="my-rentals" element={<CarsIndex />} />
+            <Route path="my-rentals/:slug" element={<CarChild />} />
+            <Route
+              path="my-rentals/:slug/create-car"
+              element={<AddCarChild />}
+            />
+            <Route
+              path="my-rentals/:slug/:carId"
+              element={<UpdateCarChild />}
+            />
+            <Route path="bookings" element={<Bookings />} />
+            <Route path="roles" element={<RoleIndex />} />
+          </Route>
         </Routes>
       </BrowserRouter>
     </AuthProvider>

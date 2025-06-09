@@ -30,4 +30,16 @@ const AuthRoute = ({ children }: { children: React.ReactNode }) => {
   return <>{children}</>;
 };
 
-export {ProtectedRoute, AuthRoute};
+const DashboardRoute = ({ children }: { children: React.ReactNode }) => {
+  const { user, isAuthenticated, isLoading } = useAuth();
+
+  if (isLoading) return <div>Loading...</div>;
+
+  if (!isAuthenticated) return <Navigate to="/login" replace />;
+
+  if (user?.role.name === "User") return <Navigate to="/" replace />;
+
+  return <>{children}</>;
+};
+
+export { ProtectedRoute, AuthRoute, DashboardRoute };
