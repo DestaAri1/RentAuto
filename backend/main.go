@@ -40,7 +40,7 @@ type AppRepositories struct {
 	carChild models.CarChildRepository
 	roles    models.RoleRepository
 	carTypes models.CarTypesRepository
-	// users    models.UserRepository // Tambahkan ini jika belum ada
+	users    models.UserRepository
 }
 
 func setupRepositories(database *gorm.DB) AppRepositories {
@@ -50,7 +50,7 @@ func setupRepositories(database *gorm.DB) AppRepositories {
 		carChild: repository.NewCarChildRepository(database),
 		roles:    repository.NewRoleRepository(database),
 		carTypes: repository.NewCarTypeRepositories(database),
-		// users:    repository.NewUserRepository(database), // Sesuaikan dengan nama constructor Anda
+		users:    repository.NewUserRepository(database),
 	}
 }
 
@@ -102,10 +102,12 @@ func setupRoutes(app *fiber.App, database *gorm.DB, repos AppRepositories, servi
 
 	// Public Protected Routes
 	//
+
 	//  User routes
 	//
-	//  Admin routes
+	//  Admin & Other except User routes
 	handlers.NewRoleHandler(protected.Group("/admin/role"), repos.roles, policies.admin)
+	handlers.NewUserHandler(protected.Group("/admin/user-management"), repos.users, policies.admin)
 	handlers.NewCarHandler(protected.Group("/admin/cars"), repos.cars, repos.roles)
 	handlers.NewCarTypesHandler(protected.Group("/admin/car-types"), repos.carTypes, repos.roles, validatorManager)
 	handlers.NewCarChildHandler(protected.Group("/admin/cars/children"), repos.carChild, repos.roles)

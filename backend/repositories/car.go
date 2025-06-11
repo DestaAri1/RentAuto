@@ -131,14 +131,6 @@ func (r *CarRepository) UpdateCar(ctx context.Context, updateData map[string]int
 		}
 	}
 
-	// if newImage, ok := updateData["image_url"].(string); ok && newImage != "" && currentCar.ImageURL != "" {
-	// 	oldImagePath := filepath.Join("assets/car", currentCar.ImageURL)
-	// 	if err := utils.DeleteFile(oldImagePath); err != nil {
-	// 		tx.Rollback()
-	// 		return err
-	// 	}
-	// }
-
 	res := tx.Model(&models.CarParent{}).Where("id = ?", carId).Updates(updateData)
 
 	if res.Error != nil {

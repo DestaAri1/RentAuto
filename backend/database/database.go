@@ -78,6 +78,7 @@ func seedData(db *gorm.DB) {
 			Email:    "admin@gmail.com",
 			Password: hashPassword("12345678"),
 			RoleID:   adminRole.ID,
+			IsProtected: true,
 		},
 		{
 			ID:       uuid.New(),
@@ -85,6 +86,7 @@ func seedData(db *gorm.DB) {
 			Email:    "user@gmail.com",
 			Password: hashPassword("12345678"),
 			RoleID:   userRole.ID,
+			IsProtected: true,
 		},
 	}
 
