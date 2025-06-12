@@ -18,6 +18,7 @@ import {
   OnlyAdminRoute,
 } from "./utils/RouteGuard.tsx";
 import RouteWrapper from "./utils/Wrapper.tsx";
+import UserIndex from "./pages/Dashboard/UserIndex.tsx";
 
 function App() {
   return (
@@ -76,6 +77,15 @@ function App() {
               element={
                 <OnlyAdminRoute>
                   <RoleIndex />
+                </OnlyAdminRoute>
+              }
+            />
+
+            <Route
+              path="user-management/users"
+              element={
+                <OnlyAdminRoute>
+                  <UserIndex />
                 </OnlyAdminRoute>
               }
             />

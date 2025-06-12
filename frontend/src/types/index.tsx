@@ -24,7 +24,7 @@ export interface User {
   email: string;
   name?: string;
   image?: string;
-  role: Role;
+  Role: Role;
 }
 
 export interface Role {

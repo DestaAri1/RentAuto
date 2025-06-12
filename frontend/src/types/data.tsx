@@ -12,7 +12,6 @@ export const DEFAULT_PERMISSIONS: PermissionData = {
   car: {
     label: "Car Management",
     permissions: [
-      "view_car",
       "edit_car",
       "create_car",
       "update_car",

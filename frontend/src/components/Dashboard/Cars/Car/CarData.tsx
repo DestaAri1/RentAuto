@@ -104,15 +104,13 @@ export default function CarData({ cars, onUpdate, onDelete }: CombinedProps) {
                         <Td>{car.available}</Td>
                         <Td>{car.available}</Td>
                         <Td className="text-right text-sm font-medium">
-                          <PermissionWrapper permission="view_car">
-                            <button
-                              onClick={() => handleViewClick(car)}
-                              className="text-yellow-600 hover:text-yellow-900"
-                              type="button"
-                            >
-                              VIEW
-                            </button>
-                          </PermissionWrapper>
+                          <button
+                            onClick={() => handleViewClick(car)}
+                            className="text-yellow-600 hover:text-yellow-900"
+                            type="button"
+                          >
+                            VIEW
+                          </button>
                           <PermissionWrapper permission="update_car">
                             <button
                               onClick={() => onUpdate(car)}
