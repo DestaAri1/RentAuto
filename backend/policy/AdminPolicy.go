@@ -39,7 +39,7 @@ func (p *AdminPolicy) IsAdmin(ctx context.Context, roleId uuid.UUID) (bool, erro
 	}
 
 	// Check if the role is administrator
-	return strings.ToLower(targetRole.Name) == "administrator", nil
+	return strings.ToLower(targetRole.Name) == "administrator" || strings.ToLower(targetRole.Name) == "super administrator", nil
 }
 
 // RequireAdmin ensures the user has administrator role

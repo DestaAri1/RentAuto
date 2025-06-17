@@ -42,7 +42,7 @@ type UserResponse struct {
 	Name     string    `json:"name" gorm:"not null"`
 	Email    string    `json:"email" gorm:"unique;not null"`
 	Password string    `json:"-"`
-	Role     RoleResponse
+	Role     RoleResponse `json:"role"`
 }
 
 type UserRepository interface {

@@ -37,6 +37,11 @@ func seedData(db *gorm.DB) {
 	roles := []models.Role{
 		{
 			ID:         uuid.New(),
+			Name:       "super administrator",
+			Permission: []string{"all"},
+		},
+		{
+			ID:         uuid.New(),
 			Name:       "administrator",
 			Permission: []string{"all"},
 		},
@@ -61,12 +66,12 @@ func seedData(db *gorm.DB) {
 
 	// 2. AMBIL ROLE ADMIN UNTUK DIPAKAI PADA USER
 	var adminRole models.Role
-	if err := db.First(&adminRole, "name = ?", "Administrator").Error; err != nil {
+	if err := db.First(&adminRole, "name = ?", "super administrator").Error; err != nil {
 		log.Fatalf("Failed to find role: %v", err)
 	}
 
 	var userRole models.Role
-	if err := db.First(&userRole, "name = ?", "User").Error; err != nil {
+	if err := db.First(&userRole, "name = ?", "user").Error; err != nil {
 		log.Fatalf("Failed to find role: %v", err)
 	}
 
