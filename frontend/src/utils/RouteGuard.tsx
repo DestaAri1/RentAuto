@@ -60,7 +60,8 @@ const OnlyAdminRoute = ({ children }: { children: React.ReactNode }) => {
   if (!isAuthenticated) return <Navigate to="/login" replace />;
 
   // Jika sudah login tapi bukan administrator, redirect back
-  if (user?.role?.name?.toLowerCase() !== "administrator") {
+  const role = user?.role?.name?.toLowerCase()
+  if (role !== "administrator" && role !== "super administrator") {
     return <RedirectBack />;
   }
 

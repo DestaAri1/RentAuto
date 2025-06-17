@@ -5,9 +5,16 @@ interface ModalProps {
   onClose: () => void;
   title: string;
   children: ReactNode;
+  size?: string;
 }
 
-const Modal: React.FC<ModalProps> = ({ isOpen, onClose, title, children }) => {
+const Modal: React.FC<ModalProps> = ({
+  isOpen,
+  onClose,
+  title,
+  children,
+  size = "max-w-md",
+}) => {
   const modalRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -34,7 +41,7 @@ const Modal: React.FC<ModalProps> = ({ isOpen, onClose, title, children }) => {
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm transition-opacity">
       <div
-        className="relative bg-white rounded-2xl shadow-xl shadow-black/10 w-full max-w-md mx-4 sm:mx-0 animate-fade-in-up"
+        className={`relative bg-white rounded-2xl shadow-xl shadow-black/10 w-full ${size} mx-4 sm:mx-0 animate-fade-in-up`}
         ref={modalRef}
       >
         {/* Tombol Close */}

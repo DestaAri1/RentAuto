@@ -28,7 +28,7 @@ export default function SideNav({ sidebarOpen, setSidebarOpen }: SideBarProps) {
     { title: "Bookings", href: "/dashboard/bookings", icon: Calendar },
     { title: "Locations", href: "/locations", icon: Map },
     { title: "Invoices", href: "/invoices", icon: FileText },
-    ...(user?.role?.name === "administrator"
+    ...(user?.role?.name === "administrator" || user?.role?.name === "super administrator"
       ? [
           {
             title: "User Management",
