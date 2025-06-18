@@ -1,12 +1,16 @@
-import React, { useCallback, useMemo } from "react";
+import React, { lazy, Suspense, useCallback, useMemo } from "react";
 import { RoleProvider, useRole } from "../../context/RoleContext.tsx";
 import DashboardLayout from "../../layout/DashboardLayout.tsx";
-import RoleTable from "../../components/Dashboard/Role/RoleTable.tsx";
 import useModal from "../../hooks/useModal.tsx";
 import ModalAddRole from "../../components/Dashboard/Role/ModalAddRole.tsx";
 import useRoleForm from "../../hooks/useRoleForm.tsx";
 import ModalUpdateRole from "../../components/Dashboard/Role/ModalUpdateRole.tsx";
 import ModalDeleteRole from "../../components/Dashboard/Role/ModalDeleteRole.tsx";
+import Loading from "../../components/Loading.tsx";
+
+const RoleTable = lazy(
+  () => import("../../components/Dashboard/Role/RoleTable.tsx")
+);
 
 function RoleContent({
   createModal,
@@ -170,11 +174,13 @@ function RoleContent({
       }
     >
       <div className="max-w-7xl mx-auto px-4 sm:px-6 md:px-8">
-        <RoleTable
-          role={role}
-          onUpdate={handleUpdateRole}
-          onDelete={handleDeleteRole}
-        />
+        <Suspense fallback={<Loading name="Load Car" />}>
+          <RoleTable
+            role={role}
+            onUpdate={handleUpdateRole}
+            onDelete={handleDeleteRole}
+          />
+        </Suspense>
       </div>
 
       {/* Add Role Modal */}

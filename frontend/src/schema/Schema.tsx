@@ -127,9 +127,26 @@ export type CarChildFormData = z.infer<typeof carChildFormSchema>;
 // Updated roleFormSchema to include permissions
 export const roleFormSchema = z.object({
   name: nameCCSchema({ field: "name" }),
-  permission: z
-    .array(z.string())
-    .min(1, "At least one permission is required"),
+  permission: z.array(z.string()).min(1, "At least one permission is required"),
 });
 
 export type RoleFormData = z.infer<typeof roleFormSchema>;
+
+export const userFormSchema = z.object({
+  name: nameCCSchema({ field: "name" }),
+  email: z
+    .string()
+    .min(1, { message: "This field has to be filled." })
+    .email("This is not a valid email."),
+  password: z
+    .union([
+      z.string().min(8, "At least password should be 8 char"),
+      z.literal("").transform(() => undefined), // Empty string jadi undefined
+      z.undefined()
+    ])
+    .optional(),
+  role_id: uuidSchema({ field: "role" })
+});
+
+
+export type UserFormData = z.infer<typeof userFormSchema>
