@@ -32,7 +32,7 @@ export interface BaseForm {
   isSubmitting: boolean;
   isValid: boolean;
   isDirty?: boolean;
-  submissionErrors: {
+  submissionErrors?: {
     general?: string;
     network?: string;
     validation?: string;

@@ -59,8 +59,6 @@ export default function UserTable({ user, onUpdate, onDelete }: UserProps) {
     );
   }
 
-  console.log(user);
-
   return (
     <HeaderBox title="User Management">
       {/* Filter Controls */}

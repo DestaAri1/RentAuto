@@ -133,7 +133,7 @@ export const roleFormSchema = z.object({
 export type RoleFormData = z.infer<typeof roleFormSchema>;
 
 export const userFormSchema = z.object({
-  name: nameCCSchema({ field: "name" }),
+  username: nameCCSchema({ field: "name" }),
   email: z
     .string()
     .min(1, { message: "This field has to be filled." })

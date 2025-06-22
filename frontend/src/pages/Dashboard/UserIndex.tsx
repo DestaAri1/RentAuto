@@ -15,6 +15,21 @@ function UserContent({
     { name: "Dashboard", href: "/dashboard" },
     { name: "Users", current: true },
   ];
+
+  // Function untuk refresh data setelah user dibuat
+  const handleUserCreated = async () => {
+    try {
+      console.log("User created successfully, refreshing data...");
+      
+      // Di sini panggil fetchData atau refresh data yang sudah ada
+      // await fetchUsers(); // Ganti dengan function fetch data Anda yang sudah ada
+      
+      console.log("Data refreshed!");
+    } catch (error) {
+      console.error("Error refreshing data:", error);
+    }
+  };
+
   return (
     <DashboardLayout
       title="User Management"
@@ -31,7 +46,11 @@ function UserContent({
       <div className="max-w-7xl mx-auto px-4 sm:px-6 md:px-8">
         <UserTable user={users} />
       </div>
-      <ModalAddUser isOpen={createModal.isOpen} onClose={createModal.closeModal} />
+      <ModalAddUser 
+        isOpen={createModal.isOpen} 
+        onClose={createModal.closeModal}
+        onUserCreated={handleUserCreated}
+      />
     </DashboardLayout>
   );
 }
@@ -40,6 +59,7 @@ export default function UserIndex() {
   const createModal = useModal();
   const updateModal = useModal();
   const deleteModal = useModal();
+  
   return (
     <UserProvider>
       <UserContent createModal={createModal} />
